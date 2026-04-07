@@ -1,0 +1,24 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+*.log
+*.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Platform generated files
+android/
+ios/
+linux/
+macos/
+windows/
+web/
