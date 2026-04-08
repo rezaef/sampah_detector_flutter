@@ -22,3 +22,4 @@ linux/
 macos/
 windows/
 web/
+.DS_Store

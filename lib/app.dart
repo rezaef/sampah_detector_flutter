@@ -8,13 +8,78 @@ class SampahDetectorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const seed = Color(0xFF1F8A70);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: seed,
+      brightness: Brightness.light,
+    );
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Deteksi Sampah',
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.green,
-        scaffoldBackgroundColor: const Color(0xFFF5F7F9),
+        colorScheme: colorScheme,
+        scaffoldBackgroundColor: const Color(0xFFF4F7F5),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          foregroundColor: colorScheme.onSurface,
+          elevation: 0,
+          centerTitle: false,
+          scrolledUnderElevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          color: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.35)),
+          ),
+          margin: EdgeInsets.zero,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            minimumSize: const Size.fromHeight(52),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(52),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+        ),
+        chipTheme: ChipThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.35)),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          height: 76,
+          backgroundColor: Colors.white,
+          indicatorColor: colorScheme.primaryContainer,
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return TextStyle(
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            );
+          }),
+        ),
       ),
       home: const HomeShell(),
     );
@@ -45,14 +110,35 @@ class _HomeShellState extends State<HomeShell> {
       HistoryPage(refreshToken: _historyRefreshToken),
     ];
 
-    final titles = <String>[
-      'Deteksi Sampah',
-      'Riwayat Deteksi',
+    final titles = <String>['Deteksi Sampah', 'Riwayat Deteksi'];
+    final subtitles = <String>[
+      'Pilih gambar lalu lihat hasil klasifikasi dengan cepat.',
+      'Tekan lama untuk memilih beberapa riwayat sekaligus.',
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[_currentIndex]),
+        toolbarHeight: 76,
+        titleSpacing: 20,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              titles[_currentIndex],
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitles[_currentIndex],
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ],
+        ),
       ),
       body: IndexedStack(
         index: _currentIndex,

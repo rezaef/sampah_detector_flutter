@@ -11,6 +11,8 @@ class DetectionHistoryItem {
     required this.createdAt,
   });
 
+  String get id => '$imagePath|${createdAt.toIso8601String()}';
+
   Map<String, dynamic> toJson() {
     return {
       'imagePath': imagePath,

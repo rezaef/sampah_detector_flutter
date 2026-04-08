@@ -29,16 +29,30 @@ class HistoryService {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
+  Future<void> _saveHistory(List<DetectionHistoryItem> items) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _storageKey,
+      items.map((entry) => jsonEncode(entry.toJson())).toList(),
+    );
+  }
+
   Future<void> addHistory(DetectionHistoryItem item) async {
     final current = await loadHistory();
     current.insert(0, item);
 
     final trimmed = current.take(30).toList();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _storageKey,
-      trimmed.map((entry) => jsonEncode(entry.toJson())).toList(),
-    );
+    await _saveHistory(trimmed);
+  }
+
+  Future<void> removeHistoryByIds(Set<String> ids) async {
+    if (ids.isEmpty) {
+      return;
+    }
+
+    final current = await loadHistory();
+    final updated = current.where((entry) => !ids.contains(entry.id)).toList();
+    await _saveHistory(updated);
   }
 
   Future<void> clearHistory() async {

@@ -21,17 +21,35 @@ class PreprocessingPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.tune_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Tahapan preprocessing',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
             Text(
-              'Tahapan preprocessing',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+              'Preview ini membantu melihat perubahan gambar sebelum inferensi dijalankan.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -79,15 +97,15 @@ class _PreviewTile extends StatelessWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
         ),
         const SizedBox(height: 8),
         Expanded(
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
             child: Container(
-              color: Colors.grey.shade200,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.55),
               width: double.infinity,
               child: child,
             ),
