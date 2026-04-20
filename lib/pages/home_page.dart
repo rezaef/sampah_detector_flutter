@@ -137,7 +137,7 @@ class _DashboardPageState extends State<DashboardPage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            childAspectRatio: 1.02,
+            childAspectRatio: 0.86,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             children: [
@@ -576,7 +576,7 @@ class _FeatureCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   subtitle,
-                  maxLines: 3,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context)
                       .textTheme
