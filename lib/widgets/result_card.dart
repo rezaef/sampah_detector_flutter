@@ -4,8 +4,13 @@ import '../models/classification_result.dart';
 
 class ResultCard extends StatelessWidget {
   final ClassificationResult result;
+  final VoidCallback? onOpenGuide;
 
-  const ResultCard({super.key, required this.result});
+  const ResultCard({
+    super.key,
+    required this.result,
+    this.onOpenGuide,
+  });
 
   Color _resultColor() {
     switch (result.category) {
@@ -88,24 +93,22 @@ class ResultCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 _MetaChip(
                   icon: Icons.speed_outlined,
                   label: '${result.latencyMs} ms',
                 ),
-                const SizedBox(width: 8),
                 _MetaChip(
                   icon: Icons.memory_outlined,
                   label: result.engine,
                 ),
-                if (result.isDemo) ...[
-                  const SizedBox(width: 8),
-                  const _MetaChip(
-                    icon: Icons.science_outlined,
-                    label: 'Demo',
-                  ),
-                ],
+                _MetaChip(
+                  icon: Icons.verified_outlined,
+                  label: result.confidenceLabel,
+                ),
               ],
             ),
             const SizedBox(height: 18),
@@ -178,17 +181,48 @@ class ResultCard extends StatelessWidget {
                 ),
               );
             }),
-            if (result.isDemo) ...[
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF6E7),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFDEA0)),
+            const SizedBox(height: 8),
+            Text(
+              'Tindak lanjut',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...result.disposalSteps.map(
+              (step) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      margin: const EdgeInsets.only(top: 1),
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.check,
+                        size: 16,
+                        color: accent,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(step)),
+                  ],
                 ),
-                child: const Text(
-                  'Catatan: hasil ini berasal dari mode demo heuristik. Tambahkan model TFLite agar inferensi memakai model CNN penelitian.',
+              ),
+            ),
+            if (onOpenGuide != null) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: onOpenGuide,
+                  icon: const Icon(Icons.menu_book_outlined),
+                  label: const Text('Buka panduan pemilahan'),
                 ),
               ),
             ],
@@ -210,7 +244,10 @@ class _MetaChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.7),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withOpacity(0.7),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

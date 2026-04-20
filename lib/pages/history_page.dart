@@ -7,8 +7,13 @@ import '../services/history_service.dart';
 
 class HistoryPage extends StatefulWidget {
   final int refreshToken;
+  final VoidCallback? onHistoryChanged;
 
-  const HistoryPage({super.key, required this.refreshToken});
+  const HistoryPage({
+    super.key,
+    required this.refreshToken,
+    this.onHistoryChanged,
+  });
 
   @override
   State<HistoryPage> createState() => _HistoryPageState();
@@ -86,6 +91,7 @@ class _HistoryPageState extends State<HistoryPage> {
       return;
     }
 
+    final deletedCount = _selectedIds.length;
     await HistoryService.instance.removeHistoryByIds(_selectedIds);
 
     if (!mounted) {
@@ -94,14 +100,93 @@ class _HistoryPageState extends State<HistoryPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_selectedIds.length} riwayat dihapus.'),
+        content: Text('$deletedCount riwayat dihapus.'),
       ),
     );
 
     setState(() {
       _selectedIds.clear();
     });
+    widget.onHistoryChanged?.call();
+    await _loadHistory();
+  }
 
+  Future<void> _deleteSingle(DetectionHistoryItem item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Hapus riwayat ini?'),
+          content: const Text(
+            'Riwayat yang dihapus tidak akan muncul lagi pada daftar.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    await HistoryService.instance.removeHistoryByIds({item.id});
+    widget.onHistoryChanged?.call();
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Riwayat berhasil dihapus.')),
+    );
+    await _loadHistory();
+  }
+
+  Future<void> _clearAll() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Hapus semua riwayat?'),
+          content: const Text(
+            'Semua hasil klasifikasi akan dihapus dari perangkat ini.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Hapus semua'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    await HistoryService.instance.clearHistory();
+    widget.onHistoryChanged?.call();
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Semua riwayat telah dihapus.')),
+    );
+    setState(() {
+      _selectedIds.clear();
+    });
     await _loadHistory();
   }
 
@@ -125,8 +210,8 @@ class _HistoryPageState extends State<HistoryPage> {
         _selectedIds.clear();
       } else {
         _selectedIds
-          ..clear()
-          ..addAll(_history.map((item) => item.id));
+            ..clear()
+            ..addAll(_history.map((item) => item.id));
       }
     });
   }
@@ -176,7 +261,7 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Hasil klasifikasi yang kamu simpan akan muncul di sini.',
+              'Hasil klasifikasi yang tersimpan akan muncul di sini dan siap dikelola kapan saja.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -196,7 +281,11 @@ class _HistoryPageState extends State<HistoryPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           if (index == 0) {
-            return _HistoryHeaderCard(isSelectionMode: _isSelectionMode);
+            return _HistoryHeaderCard(
+              isSelectionMode: _isSelectionMode,
+              totalItems: _history.length,
+              onClearAll: _clearAll,
+            );
           }
 
           if (_isSelectionMode && index == 1) {
@@ -258,6 +347,7 @@ class _HistoryPageState extends State<HistoryPage> {
               }
             },
             onLongPress: () => _toggleSelection(item, forceEnable: true),
+            onDelete: () => _deleteSingle(item),
           );
         },
       ),
@@ -267,51 +357,77 @@ class _HistoryPageState extends State<HistoryPage> {
 
 class _HistoryHeaderCard extends StatelessWidget {
   final bool isSelectionMode;
+  final int totalItems;
+  final VoidCallback onClearAll;
 
-  const _HistoryHeaderCard({required this.isSelectionMode});
+  const _HistoryHeaderCard({
+    required this.isSelectionMode,
+    required this.totalItems,
+    required this.onClearAll,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                isSelectionMode ? Icons.checklist_rounded : Icons.history_rounded,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isSelectionMode ? 'Mode pilih aktif' : 'Riwayat klasifikasi',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
+                  child: Icon(
                     isSelectionMode
-                        ? 'Tap item untuk memilih, lalu pilih semua atau hapus.'
-                        : 'Tahan salah satu item untuk mulai memilih beberapa riwayat.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                        ? Icons.checklist_rounded
+                        : Icons.history_rounded,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isSelectionMode ? 'Mode pilih aktif' : 'Riwayat klasifikasi',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isSelectionMode
+                            ? 'Tap item untuk memilih, lalu pilih semua atau hapus.'
+                            : '$totalItems riwayat tersimpan di perangkat.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+            if (!isSelectionMode) ...[
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onClearAll,
+                  icon: const Icon(Icons.delete_sweep_outlined),
+                  label: const Text('Hapus semua riwayat'),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -325,6 +441,7 @@ class _HistoryCard extends StatelessWidget {
   final String formattedDateTime;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final VoidCallback onDelete;
 
   const _HistoryCard({
     required this.item,
@@ -332,6 +449,7 @@ class _HistoryCard extends StatelessWidget {
     required this.formattedDateTime,
     required this.onTap,
     required this.onLongPress,
+    required this.onDelete,
   });
 
   @override
@@ -359,7 +477,10 @@ class _HistoryCard extends StatelessWidget {
           side: BorderSide(
             color: isSelected
                 ? selectedColor
-                : Theme.of(context).colorScheme.outlineVariant.withOpacity(0.35),
+                : Theme.of(context)
+                    .colorScheme
+                    .outlineVariant
+                    .withOpacity(0.35),
             width: isSelected ? 1.4 : 1,
           ),
         ),
@@ -388,7 +509,10 @@ class _HistoryCard extends StatelessWidget {
                             color: selectedColor.withOpacity(0.22),
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          child: const Icon(Icons.check_circle, color: Colors.white),
+                          child: const Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                   ],
@@ -399,17 +523,39 @@ class _HistoryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
                               item.result.label,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
                             ),
                           ),
                           if (isSelected)
                             Icon(Icons.check_circle, color: selectedColor),
+                          if (!isSelected)
+                            PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'hapus') {
+                                  onDelete();
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem<String>(
+                                  value: 'hapus',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_outline),
+                                      SizedBox(width: 8),
+                                      Text('Hapus'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -420,7 +566,9 @@ class _HistoryCard extends StatelessWidget {
                       Text(
                         item.result.recommendation,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                       ),
                       const SizedBox(height: 10),
@@ -429,7 +577,6 @@ class _HistoryCard extends StatelessWidget {
                         runSpacing: 8,
                         children: [
                           Chip(label: Text(item.result.engine)),
-                          if (item.result.isDemo) const Chip(label: Text('Demo')),
                         ],
                       ),
                     ],

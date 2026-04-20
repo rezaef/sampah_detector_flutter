@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'pages/bank_sampah_page.dart';
 import 'pages/detect_page.dart';
+import 'pages/eco_challenges_page.dart';
+import 'pages/education_page.dart';
 import 'pages/history_page.dart';
+import 'pages/home_page.dart';
+import 'pages/report_page.dart';
+import 'pages/rewards_page.dart';
+import 'pages/sorting_guide_page.dart';
+import 'pages/tpa_page.dart';
 
 class SampahDetectorApp extends StatelessWidget {
   const SampahDetectorApp({super.key});
@@ -34,7 +42,9 @@ class SampahDetectorApp extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.35)),
+            side: BorderSide(
+              color: colorScheme.outlineVariant.withOpacity(0.35),
+            ),
           ),
           margin: EdgeInsets.zero,
         ),
@@ -67,7 +77,9 @@ class SampahDetectorApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.35)),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withOpacity(0.35),
+          ),
         ),
         navigationBarTheme: NavigationBarThemeData(
           height: 76,
@@ -95,25 +107,112 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
-  int _historyRefreshToken = 0;
+  int _appRefreshToken = 0;
 
-  void _handleHistorySaved() {
+  void _handleDataChanged() {
     setState(() {
-      _historyRefreshToken++;
+      _appRefreshToken++;
     });
+  }
+
+  void _openFeature(AppFeature feature) {
+    switch (feature) {
+      case AppFeature.detect:
+        setState(() {
+          _currentIndex = 1;
+        });
+        break;
+      case AppFeature.history:
+        setState(() {
+          _currentIndex = 2;
+        });
+        break;
+      case AppFeature.rewards:
+        setState(() {
+          _currentIndex = 3;
+        });
+        break;
+      case AppFeature.sortingGuide:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const SortingGuidePage(),
+          ),
+        );
+        break;
+      case AppFeature.education:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const EducationPage(),
+          ),
+        );
+        break;
+      case AppFeature.report:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ReportPage(
+              onReportChanged: _handleDataChanged,
+            ),
+          ),
+        );
+        break;
+      case AppFeature.challenges:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => EcoChallengesPage(
+              refreshToken: _appRefreshToken,
+            ),
+          ),
+        );
+        break;
+      case AppFeature.tpa:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const TpaPage(),
+          ),
+        );
+        break;
+      case AppFeature.bankSampah:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const BankSampahPage(),
+          ),
+        );
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      DetectPage(onHistorySaved: _handleHistorySaved),
-      HistoryPage(refreshToken: _historyRefreshToken),
+      DashboardPage(
+        refreshToken: _appRefreshToken,
+        onOpenFeature: _openFeature,
+      ),
+      DetectPage(
+        onHistorySaved: _handleDataChanged,
+        onOpenGuide: () => _openFeature(AppFeature.sortingGuide),
+      ),
+      HistoryPage(
+        refreshToken: _appRefreshToken,
+        onHistoryChanged: _handleDataChanged,
+      ),
+      RewardsPage(
+        refreshToken: _appRefreshToken,
+        onOpenChallenges: () => _openFeature(AppFeature.challenges),
+      ),
     ];
 
-    final titles = <String>['Deteksi Sampah', 'Riwayat Deteksi'];
+    final titles = <String>[
+      'Beranda',
+      'Deteksi Sampah',
+      'Riwayat Scan',
+      'Reward & Point',
+    ];
     final subtitles = <String>[
-      'Pilih gambar lalu lihat hasil klasifikasi dengan cepat.',
-      'Tekan lama untuk memilih beberapa riwayat sekaligus.',
+      'Semua fitur utama pengelolaan sampah dalam satu dashboard.',
+      'Scan kamera atau galeri, preprocessing, dan klasifikasi lokal.',
+      'Semua hasil klasifikasi tersimpan dan bisa dikelola kapan saja.',
+      'Pantau poin, badge, leaderboard, dan progress tantangan.',
     ];
 
     return Scaffold(
@@ -134,7 +233,9 @@ class _HomeShellState extends State<HomeShell> {
             Text(
               subtitles[_currentIndex],
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant,
                   ),
             ),
           ],
@@ -153,6 +254,11 @@ class _HomeShellState extends State<HomeShell> {
         },
         destinations: const [
           NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Beranda',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.camera_alt_outlined),
             selectedIcon: Icon(Icons.camera_alt),
             label: 'Deteksi',
@@ -161,6 +267,11 @@ class _HomeShellState extends State<HomeShell> {
             icon: Icon(Icons.history_outlined),
             selectedIcon: Icon(Icons.history),
             label: 'Riwayat',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.emoji_events_outlined),
+            selectedIcon: Icon(Icons.emoji_events),
+            label: 'Reward',
           ),
         ],
       ),

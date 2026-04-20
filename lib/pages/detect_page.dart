@@ -14,8 +14,13 @@ import '../widgets/result_card.dart';
 
 class DetectPage extends StatefulWidget {
   final VoidCallback onHistorySaved;
+  final VoidCallback? onOpenGuide;
 
-  const DetectPage({super.key, required this.onHistorySaved});
+  const DetectPage({
+    super.key,
+    required this.onHistorySaved,
+    this.onOpenGuide,
+  });
 
   @override
   State<DetectPage> createState() => _DetectPageState();
@@ -217,7 +222,8 @@ class _DetectPageState extends State<DetectPage> {
         const SizedBox(height: 16),
         const _SectionTitle(
           title: 'Ambil gambar',
-          subtitle: 'Pilih dari kamera atau galeri untuk mulai klasifikasi.',
+          subtitle:
+              'Pilih dari kamera atau galeri untuk memulai proses klasifikasi.',
         ),
         const SizedBox(height: 12),
         Row(
@@ -325,7 +331,7 @@ class _DetectPageState extends State<DetectPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Tekan tombol klasifikasi di bawah untuk melihat hasil dan riwayat terbaru.',
+                              'Lanjutkan ke klasifikasi untuk melihat hasil, rekomendasi penanganan, dan riwayat terbaru.',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -358,7 +364,9 @@ class _DetectPageState extends State<DetectPage> {
                               ),
                             )
                           : const Icon(Icons.auto_awesome),
-                      label: Text(_isBusy ? 'Mengklasifikasi...' : 'Klasifikasi sekarang'),
+                      label: Text(
+                        _isBusy ? 'Mengklasifikasi...' : 'Klasifikasi sekarang',
+                      ),
                     ),
                   ),
                 ),
@@ -370,7 +378,8 @@ class _DetectPageState extends State<DetectPage> {
           const SizedBox(height: 16),
           const _SectionTitle(
             title: 'Preview preprocessing',
-            subtitle: 'Lihat tahapan pengolahan sebelum model membaca gambar.',
+            subtitle:
+                'Lihat setiap tahapan pengolahan citra sebelum analisis klasifikasi dijalankan.',
           ),
           const SizedBox(height: 12),
           PreprocessingPreview(
@@ -389,10 +398,14 @@ class _DetectPageState extends State<DetectPage> {
           _SectionTitle(
             key: _resultSectionKey,
             title: 'Hasil klasifikasi',
-            subtitle: 'Halaman akan langsung berpindah ke sini setelah tombol klasifikasi ditekan.',
+            subtitle:
+                'Hasil, skor tiap kelas, dan panduan tindak lanjut tampil dalam satu tampilan.',
           ),
           const SizedBox(height: 12),
-          ResultCard(result: _result!),
+          ResultCard(
+            result: _result!,
+            onOpenGuide: widget.onOpenGuide,
+          ),
         ],
         if (_errorMessage != null) ...[
           const SizedBox(height: 16),
@@ -430,6 +443,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final engineLabel = isUsingModel ? 'Mode TFLite offline' : 'Analisis lokal';
 
     return Container(
       decoration: BoxDecoration(
@@ -477,7 +491,7 @@ class _HeroCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Pilih gambar, jalankan inferensi lokal, lalu lihat hasil secara instan.',
+                        'Pilih gambar, jalankan preprocessing, lalu lihat hasil klasifikasi dan panduan penanganan secara instan.',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withOpacity(0.92),
                         ),
@@ -493,8 +507,8 @@ class _HeroCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _InfoChip(
-                  icon: isUsingModel ? Icons.memory : Icons.science_outlined,
-                  label: isUsingModel ? 'Mode TFLite offline' : 'Mode demo heuristik',
+                  icon: Icons.memory_outlined,
+                  label: engineLabel,
                   textColor: Colors.white,
                   backgroundColor: Colors.white.withOpacity(0.14),
                 ),
@@ -512,7 +526,7 @@ class _HeroCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (!isUsingModel && !isInitializing) ...[
+            if (!isInitializing) ...[
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -522,7 +536,7 @@ class _HeroCard extends StatelessWidget {
                   border: Border.all(color: Colors.white.withOpacity(0.20)),
                 ),
                 child: Text(
-                  'Model TFLite belum ditemukan. Aplikasi tetap bisa dipakai dalam mode demo untuk menampilkan alur kerja dan UI.',
+                  'Setiap hasil deteksi langsung dapat disimpan ke riwayat dan dipakai untuk memperbarui point pengguna.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.white,
                   ),

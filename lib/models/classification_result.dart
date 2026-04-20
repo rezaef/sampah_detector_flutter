@@ -31,11 +31,34 @@ class ClassificationResult {
   String get recommendation {
     switch (category) {
       case WasteCategory.organik:
-        return 'Pisahkan ke tempat sampah organik atau kompos.';
+        return 'Pisahkan ke wadah organik atau olah sebagai kompos.';
       case WasteCategory.anorganik:
-        return 'Pisahkan ke tempat sampah daur ulang / anorganik.';
+        return 'Pisahkan ke wadah anorganik lalu siapkan untuk didaur ulang.';
       case WasteCategory.tidakDiketahui:
-        return 'Coba ambil gambar dengan pencahayaan lebih baik.';
+        return 'Ambil ulang gambar dengan pencahayaan yang lebih merata.';
+    }
+  }
+
+  List<String> get disposalSteps {
+    switch (category) {
+      case WasteCategory.organik:
+        return const [
+          'Pisahkan dari plastik, logam, dan kaca sebelum dibuang.',
+          'Kurangi kadar air berlebih agar wadah tidak cepat bau.',
+          'Gunakan jalur kompos rumah tangga atau tempat sampah organik.',
+        ];
+      case WasteCategory.anorganik:
+        return const [
+          'Bilas sisa cairan atau minyak sebelum disimpan.',
+          'Keringkan dan lipat kemasan untuk menghemat ruang.',
+          'Setorkan ke bank sampah atau wadah daur ulang terdekat.',
+        ];
+      case WasteCategory.tidakDiketahui:
+        return const [
+          'Pastikan objek terlihat utuh di tengah frame kamera.',
+          'Gunakan cahaya yang cukup dan latar belakang lebih bersih.',
+          'Coba scan ulang dari sudut yang lebih jelas.',
+        ];
     }
   }
 
