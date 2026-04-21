@@ -164,7 +164,9 @@ class _DetectPageState extends State<DetectPage> {
         _isBusy = false;
       });
 
-      await _scrollToResult();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToResult();
+      });
     } catch (error) {
       if (!mounted) {
         return;
@@ -194,15 +196,19 @@ class _DetectPageState extends State<DetectPage> {
   }
 
   Future<void> _scrollToResult() async {
-    await Future<void>.delayed(const Duration(milliseconds: 120));
-    final context = _resultSectionKey.currentContext;
-    if (context == null) {
+    await Future<void>.delayed(const Duration(milliseconds: 140));
+    if (!mounted) {
+      return;
+    }
+
+    final targetContext = _resultSectionKey.currentContext;
+    if (targetContext == null) {
       return;
     }
 
     await Scrollable.ensureVisible(
-      context,
-      duration: const Duration(milliseconds: 460),
+      targetContext,
+      duration: const Duration(milliseconds: 520),
       curve: Curves.easeInOutCubic,
       alignment: 0.08,
     );

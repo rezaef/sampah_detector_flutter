@@ -10,6 +10,9 @@ import 'pages/report_page.dart';
 import 'pages/rewards_page.dart';
 import 'pages/sorting_guide_page.dart';
 import 'pages/tpa_page.dart';
+import 'services/classifier_service.dart';
+import 'services/history_service.dart';
+import 'services/report_service.dart';
 
 class SampahDetectorApp extends StatelessWidget {
   const SampahDetectorApp({super.key});
@@ -93,7 +96,123 @@ class SampahDetectorApp extends StatelessWidget {
           }),
         ),
       ),
-      home: const HomeShell(),
+      home: const _StartupGate(),
+    );
+  }
+}
+
+class _StartupGate extends StatefulWidget {
+  const _StartupGate();
+
+  @override
+  State<_StartupGate> createState() => _StartupGateState();
+}
+
+class _StartupGateState extends State<_StartupGate> {
+  late final Future<void> _startupFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _startupFuture = _prepareApp();
+  }
+
+  Future<void> _prepareApp() async {
+    await Future.wait([
+      ClassifierService.instance.initialize(),
+      HistoryService.instance.loadHistory(),
+      ReportService.instance.loadReports(),
+    ]);
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _startupFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const _LoadingPage();
+        }
+        return const HomeShell();
+      },
+    );
+  }
+}
+
+class _LoadingPage extends StatelessWidget {
+  const _LoadingPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF4F7F5), Color(0xFFE8F5EF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 108,
+                  height: 108,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1F8A70), Color(0xFF5BC0A5)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1F8A70).withOpacity(0.18),
+                        blurRadius: 28,
+                        offset: const Offset(0, 16),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.recycling_rounded,
+                    size: 52,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Sampah Detector',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Menyiapkan model, riwayat, dan data aplikasi...',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(strokeWidth: 3),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -221,21 +340,18 @@ class _HomeShellState extends State<HomeShell> {
         titleSpacing: 20,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               titles[_currentIndex],
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
             ),
             const SizedBox(height: 2),
             Text(
               subtitles[_currentIndex],
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ],
@@ -260,17 +376,17 @@ class _HomeShellState extends State<HomeShell> {
           ),
           NavigationDestination(
             icon: Icon(Icons.camera_alt_outlined),
-            selectedIcon: Icon(Icons.camera_alt),
+            selectedIcon: Icon(Icons.camera_alt_rounded),
             label: 'Deteksi',
           ),
           NavigationDestination(
             icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history),
+            selectedIcon: Icon(Icons.history_rounded),
             label: 'Riwayat',
           ),
           NavigationDestination(
             icon: Icon(Icons.emoji_events_outlined),
-            selectedIcon: Icon(Icons.emoji_events),
+            selectedIcon: Icon(Icons.emoji_events_rounded),
             label: 'Reward',
           ),
         ],
