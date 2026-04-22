@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 
-import 'pages/account_page.dart';
 import 'pages/bank_sampah_page.dart';
 import 'pages/detect_page.dart';
 import 'pages/eco_challenges_page.dart';
 import 'pages/education_page.dart';
 import 'pages/history_page.dart';
 import 'pages/home_page.dart';
-import 'pages/login_page.dart';
 import 'pages/report_page.dart';
 import 'pages/rewards_page.dart';
 import 'pages/sorting_guide_page.dart';
 import 'pages/tpa_page.dart';
-import 'services/auth_service.dart';
 import 'services/classifier_service.dart';
 import 'services/history_service.dart';
 import 'services/notification_service.dart';
@@ -54,30 +51,6 @@ class SampahDetectorApp extends StatelessWidget {
             ),
           ),
           margin: EdgeInsets.zero,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.55),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.55),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: colorScheme.primary, width: 1.4),
-          ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -151,7 +124,6 @@ class _StartupGateState extends State<_StartupGate> {
       HistoryService.instance.loadHistory(),
       ReportService.instance.loadReports(),
       NotificationService.instance.initialize(),
-      AuthService.instance.initialize(),
     ]);
     await Future<void>.delayed(const Duration(milliseconds: 900));
   }
@@ -164,15 +136,7 @@ class _StartupGateState extends State<_StartupGate> {
         if (snapshot.connectionState != ConnectionState.done) {
           return const _LoadingPage();
         }
-        return AnimatedBuilder(
-          animation: AuthService.instance,
-          builder: (context, _) {
-            if (AuthService.instance.isAuthenticated) {
-              return const HomeShell();
-            }
-            return const LoginPage();
-          },
-        );
+        return const HomeShell();
       },
     );
   }
@@ -234,7 +198,7 @@ class _LoadingPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Menyiapkan model, sesi login, riwayat, dan data aplikasi...',
+                  'Menyiapkan model, riwayat, dan data aplikasi...',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -359,7 +323,6 @@ class _HomeShellState extends State<HomeShell> {
       ),
     ];
 
-    final user = AuthService.instance.currentUser;
     final titles = <String>[
       'Beranda',
       'Deteksi Sampah',
@@ -367,9 +330,7 @@ class _HomeShellState extends State<HomeShell> {
       'Reward & Point',
     ];
     final subtitles = <String>[
-      user == null
-          ? 'Semua fitur utama pengelolaan sampah dalam satu dashboard.'
-          : 'Halo ${user.displayName}, semua fitur utama pengelolaan sampah ada di sini.',
+      'Semua fitur utama pengelolaan sampah dalam satu dashboard.',
       'Scan kamera atau galeri, preprocessing, dan klasifikasi lokal.',
       'Semua hasil klasifikasi tersimpan dan bisa dikelola kapan saja.',
       'Pantau poin, badge, dan progress tantangan pengguna.',
@@ -397,22 +358,6 @@ class _HomeShellState extends State<HomeShell> {
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton.filledTonal(
-              tooltip: 'Akun saya',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const AccountPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.person_outline_rounded),
-            ),
-          ),
-        ],
       ),
       body: IndexedStack(
         index: _currentIndex,
