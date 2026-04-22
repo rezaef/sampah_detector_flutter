@@ -4,6 +4,7 @@ import '../models/classification_result.dart';
 import '../models/environmental_report.dart';
 import '../models/gamification_models.dart';
 import '../models/history_entry.dart';
+import '../services/auth_service.dart';
 import '../services/gamification_service.dart';
 import '../services/history_service.dart';
 import '../services/report_service.dart';
@@ -129,33 +130,49 @@ class _DashboardPageState extends State<DashboardPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _DashboardHero(summary: summary),
+          _DashboardHero(
+            summary: summary,
+            userName: AuthService.instance.currentUser?.displayName,
+          ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          Row(
             children: [
-              _StatCard(
-                title: 'Total Scan',
-                value: summary.totalScans.toString(),
-                icon: Icons.qr_code_scanner_outlined,
+              Expanded(
+                child: _StatCard(
+                  title: 'Total Scan',
+                  value: summary.totalScans.toString(),
+                  icon: Icons.qr_code_scanner_outlined,
+                ),
               ),
-              _StatCard(
-                title: 'Organik',
-                value: summary.organicCount.toString(),
-                icon: Icons.eco_outlined,
-                subtitle: _organicAverageConfidenceLabel,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  title: 'Poin',
+                  value: summary.points.toString(),
+                  icon: Icons.stars_outlined,
+                ),
               ),
-              _StatCard(
-                title: 'Anorganik',
-                value: summary.anorganicCount.toString(),
-                icon: Icons.recycling_outlined,
-                subtitle: _anorganicAverageConfidenceLabel,
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  title: 'Organik',
+                  value: summary.organicCount.toString(),
+                  icon: Icons.eco_outlined,
+                  subtitle: _organicAverageConfidenceLabel,
+                ),
               ),
-              _StatCard(
-                title: 'Poin',
-                value: summary.points.toString(),
-                icon: Icons.stars_outlined,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  title: 'Anorganik',
+                  value: summary.anorganicCount.toString(),
+                  icon: Icons.recycling_outlined,
+                  subtitle: _anorganicAverageConfidenceLabel,
+                ),
               ),
             ],
           ),
@@ -193,7 +210,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 onTap: () => widget.onOpenFeature(AppFeature.education),
               ),
               _FeatureCard(
-                title: 'Eco Challenges',
+                title: 'Tantangan Aktif',
                 subtitle: 'Tantangan mingguan untuk mendorong konsistensi.',
                 icon: Icons.flag_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.challenges),
@@ -237,7 +254,7 @@ class _DashboardPageState extends State<DashboardPage> {
           else
             const _ActivityCard(
               title: 'Klasifikasi terakhir',
-              subtitle: 'Belum ada riwayat scan',
+              subtitle: 'Belum ada riwayat klasifikasi',
               description:
                   'Mulai dengan memilih gambar dari kamera atau galeri pada menu deteksi.',
               icon: Icons.photo_camera_back_outlined,
@@ -256,7 +273,7 @@ class _DashboardPageState extends State<DashboardPage> {
           else
             const _ActivityCard(
               title: 'Laporan lingkungan terbaru',
-              subtitle: 'Belum ada laporan masuk',
+              subtitle: 'Belum ada data laporan',
               description:
                   'Fitur laporan siap dipakai untuk mencatat titik penumpukan sampah.',
               icon: Icons.assignment_outlined,
@@ -346,8 +363,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
 class _DashboardHero extends StatelessWidget {
   final AppGamificationSummary summary;
+  final String? userName;
 
-  const _DashboardHero({required this.summary});
+  const _DashboardHero({
+    required this.summary,
+    this.userName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +415,9 @@ class _DashboardHero extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Sampah Detector',
+                        userName == null || userName!.trim().isEmpty
+                            ? 'Selamat datang'
+                            : 'Selamat datang, ${userName!.trim()}',
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
@@ -402,7 +425,7 @@ class _DashboardHero extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Platform mobile untuk scan, edukasi, gamifikasi, laporan, dan informasi lokasi.',
+                        'Kelola scan, edukasi, gamifikasi, laporan, dan informasi lokasi dalam satu aplikasi.',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withOpacity(0.94),
                         ),
@@ -483,84 +506,69 @@ class _StatCard extends StatelessWidget {
     this.subtitle,
   });
 
+
   @override
   Widget build(BuildContext context) {
-    final width = (MediaQuery.of(context).size.width - 44) / 2;
-
-    return SizedBox(
-      width: width,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  icon,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onPrimaryContainer,
-                ),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
                     Text(
-                      title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
+                      subtitle!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurfaceVariant,
                           ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      value,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
 class _FeatureCard extends StatelessWidget {
   final String title;
   final String subtitle;

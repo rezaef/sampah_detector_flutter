@@ -56,7 +56,7 @@ class GamificationService {
         id: 'report-1',
         title: 'Kirim 1 laporan lingkungan',
         description:
-            'Laporkan satu titik sampah di sekitar lingkunganmu.',
+            'Laporkan satu titik sampah di area sekitar.',
         target: 1,
         progress: reports.length,
         rewardPoints: 50,
@@ -115,7 +115,7 @@ class GamificationService {
       const LeaderboardEntry(name: 'Citra', points: 290),
       const LeaderboardEntry(name: 'Dion', points: 210),
       LeaderboardEntry(
-        name: 'Kamu',
+        name: 'Pengguna aktif',
         points: points,
         isCurrentUser: true,
       ),

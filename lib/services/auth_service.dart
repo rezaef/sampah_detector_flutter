@@ -124,10 +124,10 @@ class AuthService extends ChangeNotifier {
     }
 
     if (matchedUser == null) {
-      throw const AuthException('Akun tidak ditemukan. Silakan daftar dulu.');
+      throw const AuthException('Akun tidak ditemukan.');
     }
     if ((matchedUser['password'] as String?) != password) {
-      throw const AuthException('Password salah. Coba lagi.');
+      throw const AuthException('Password salah.');
     }
 
     await _setCurrentUser(AuthUser.fromJson(matchedUser));
@@ -161,6 +161,86 @@ class AuthService extends ChangeNotifier {
     }
 
     await _setCurrentUser(AuthUser.fromJson(googleUser));
+  }
+
+  Future<void> updateEmail(String email) async {
+    await initialize();
+
+    final user = _currentUser;
+    if (user == null) {
+      throw const AuthException('Sesi akun tidak tersedia.');
+    }
+
+    final normalizedEmail = email.trim().toLowerCase();
+    if (!_isValidEmail(normalizedEmail)) {
+      throw const AuthException('Format email belum valid.');
+    }
+
+    final users = await _loadStoredUsers();
+    final emailUsed = users.any(
+      (item) =>
+          (item['id'] as String) != user.id &&
+          (item['email'] as String).toLowerCase() == normalizedEmail,
+    );
+    if (emailUsed) {
+      throw const AuthException('Email sudah digunakan.');
+    }
+
+    final updatedUsers = users.map((item) {
+      if (item['id'] != user.id) {
+        return item;
+      }
+      return {
+        ...item,
+        'email': normalizedEmail,
+      };
+    }).toList();
+
+    await _saveStoredUsers(updatedUsers);
+    await _setCurrentUser(
+      AuthUser(
+        id: user.id,
+        username: user.username,
+        email: normalizedEmail,
+        displayName: user.displayName,
+        role: user.role,
+        provider: user.provider,
+      ),
+    );
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await initialize();
+
+    final user = _currentUser;
+    if (user == null) {
+      throw const AuthException('Sesi akun tidak tersedia.');
+    }
+    if (newPassword.length < 6) {
+      throw const AuthException('Password minimal 6 karakter.');
+    }
+
+    final users = await _loadStoredUsers();
+    final index = users.indexWhere((item) => item['id'] == user.id);
+    if (index < 0) {
+      throw const AuthException('Data akun tidak ditemukan.');
+    }
+
+    final storedPassword = (users[index]['password'] as String?) ?? '';
+    if (storedPassword.isNotEmpty && storedPassword != currentPassword) {
+      throw const AuthException('Kata sandi saat ini tidak sesuai.');
+    }
+
+    users[index] = {
+      ...users[index],
+      'password': newPassword,
+    };
+
+    await _saveStoredUsers(users);
+    await _setCurrentUser(user);
   }
 
   Future<void> signOut() async {

@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('Akun berhasil dibuat. Selamat datang!')),
+          const SnackBar(content: Text('Akun berhasil dibuat.')),
         );
       Navigator.of(context).pop();
     } on AuthException catch (error) {
@@ -63,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('Registrasi gagal. Coba lagi.')),
+          const SnackBar(content: Text('Pendaftaran akun gagal.')),
         );
     } finally {
       if (mounted) {
@@ -77,7 +77,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat akun user')),
+      appBar: AppBar(title: const Text('Daftar Akun')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -87,14 +87,14 @@ class _RegisterPageState extends State<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Daftar akun lokal',
+                  'Daftar Akun',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Akun ini khusus user mobile. Nanti data login akan kita arahkan ke backend Laravel.',
+                  'Lengkapi data akun untuk melanjutkan proses pendaftaran.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -156,7 +156,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'Kata sandi',
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             onPressed: () {
@@ -173,7 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.length < 6) {
-                            return 'Password minimal 6 karakter';
+                            return 'Kata sandi minimal 6 karakter';
                           }
                           return null;
                         },
@@ -183,7 +183,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         controller: _confirmController,
                         obscureText: _obscureConfirm,
                         decoration: InputDecoration(
-                          labelText: 'Konfirmasi password',
+                          labelText: 'Konfirmasi kata sandi',
                           prefixIcon: const Icon(Icons.lock_reset_outlined),
                           suffixIcon: IconButton(
                             onPressed: () {
@@ -200,7 +200,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         validator: (value) {
                           if (value != _passwordController.text) {
-                            return 'Konfirmasi password tidak sama';
+                            return 'Konfirmasi kata sandi tidak sesuai';
                           }
                           return null;
                         },
@@ -217,7 +217,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Buat akun'),
+                            : const Text('Daftar Akun'),
                       ),
                     ],
                   ),

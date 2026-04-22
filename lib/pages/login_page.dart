@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     } on AuthException catch (error) {
       _showMessage(error.message);
     } catch (_) {
-      _showMessage('Login gagal. Silakan coba lagi.');
+      _showMessage('Proses masuk gagal.');
     } finally {
       if (mounted) {
         setState(() {
@@ -59,13 +59,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await AuthService.instance.signInWithGoogleDemo();
-      if (mounted) {
-        _showMessage(
-          'Mode frontend aktif: login Google masih simulasi lokal sampai backend Laravel disambungkan.',
-        );
-      }
     } catch (_) {
-      _showMessage('Gagal memulai login Google.');
+      _showMessage('Masuk dengan Google gagal.');
     } finally {
       if (mounted) {
         setState(() {
@@ -129,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 20),
                         Center(
                           child: Text(
-                            'Masuk ke Sampah Detector',
+                            'Masuk Akun',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w800,
@@ -139,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 8),
                         Center(
                           child: Text(
-                            'Frontend login sudah siap untuk user mobile. Backend Laravel akan kita sambungkan setelah ini.',
+                            'Masuk untuk mengakses seluruh fitur aplikasi.',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colorScheme.onSurfaceVariant,
@@ -156,22 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.account_circle_outlined),
-                          label: const Text('Lanjutkan dengan Google'),
-                        ),
-                        const SizedBox(height: 10),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer.withOpacity(0.45),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            'Catatan: tombol Google saat ini masih mode demo frontend agar alur UI selesai dulu. Nanti kita ganti ke OAuth Laravel.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
+                          label: const Text('Masuk dengan Google'),
                         ),
                         const SizedBox(height: 22),
                         Row(
@@ -182,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
-                                'atau login dengan akun lokal',
+                                'atau',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                 ),
@@ -251,30 +231,33 @@ class _LoginPageState extends State<LoginPage> {
                                           color: Colors.white,
                                         ),
                                       )
-                                    : const Text('Masuk'),
+                                    : const Text('Masuk Akun'),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Belum punya akun?',
-                              style: theme.textTheme.bodyMedium,
+                        Center(
+                          child: Text(
+                            'Belum Memiliki Akun?',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const RegisterPage(),
-                                  ),
-                                );
-                              },
-                              child: const Text('Daftar sekarang'),
-                            ),
-                          ],
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const RegisterPage(),
+                                ),
+                              );
+                            },
+                            child: const Text('Daftar akun'),
+                          ),
                         ),
                       ],
                     ),

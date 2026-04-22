@@ -62,7 +62,7 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
         .fold<int>(0, (total, item) => total + item.rewardPoints);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Eco Challenges')),
+      appBar: AppBar(title: const Text('Tantangan Aktif')),
       body: RefreshIndicator(
         onRefresh: _loadSummary,
         child: ListView(
@@ -297,7 +297,7 @@ class _ChallengeCard extends StatelessWidget {
               children: [
                 Text('${challenge.progress}/${challenge.target} progres'),
                 Text(
-                  isCompleted ? 'Target tercapai' : 'Teruskan aktivitasmu',
+                  isCompleted ? 'Target tercapai' : 'Lanjutkan aktivitas',
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium

@@ -119,7 +119,7 @@ class _RewardsPageState extends State<RewardsPage> {
           const _RewardSectionHeader(
             title: 'Badge pengguna',
             subtitle:
-                'Progress badge mengikuti akumulasi poin dan konsistensi penggunaan aplikasi.',
+                'Progres badge mengikuti akumulasi poin dan konsistensi penggunaan fitur.',
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -165,7 +165,7 @@ class _RewardsPageState extends State<RewardsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Eco Challenges',
+                              'Tantangan Aktif',
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -194,7 +194,7 @@ class _RewardsPageState extends State<RewardsPage> {
                     child: FilledButton.icon(
                       onPressed: widget.onOpenChallenges,
                       icon: const Icon(Icons.arrow_forward_outlined),
-                      label: const Text('Lihat eco challenges'),
+                      label: const Text('Lihat tantangan'),
                     ),
                   ),
                 ],

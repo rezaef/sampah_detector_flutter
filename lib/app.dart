@@ -364,15 +364,15 @@ class _HomeShellState extends State<HomeShell> {
       'Beranda',
       'Deteksi Sampah',
       'Riwayat Scan',
-      'Reward & Point',
+      'Reward & Poin',
     ];
     final subtitles = <String>[
       user == null
           ? 'Semua fitur utama pengelolaan sampah dalam satu dashboard.'
-          : 'Halo ${user.displayName}, semua fitur utama pengelolaan sampah ada di sini.',
+          : 'Seluruh fitur utama pengelolaan sampah tersedia dalam satu dashboard.',
       'Scan kamera atau galeri, preprocessing, dan klasifikasi lokal.',
-      'Semua hasil klasifikasi tersimpan dan bisa dikelola kapan saja.',
-      'Pantau poin, badge, dan progress tantangan pengguna.',
+      'Seluruh hasil klasifikasi tersimpan dan dapat dikelola kapan saja.',
+      'Pantau poin, badge, dan progres tantangan secara terpusat.',
     ];
 
     return Scaffold(
@@ -401,7 +401,7 @@ class _HomeShellState extends State<HomeShell> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: IconButton.filledTonal(
-              tooltip: 'Akun saya',
+              tooltip: 'Akun',
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
