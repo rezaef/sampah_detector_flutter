@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/classification_result.dart';
 import '../models/history_entry.dart';
 import '../services/classifier_service.dart';
 import '../services/history_service.dart';
+import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../utils/image_preprocessor.dart';
 import '../widgets/preprocessing_preview.dart';
@@ -154,6 +156,10 @@ class _DetectPageState extends State<DetectPage> {
 
       await HistoryService.instance.addHistory(historyItem);
       widget.onHistorySaved();
+      await NotificationService.instance.showClassificationCompleted(
+        label: result.label,
+        confidenceLabel: result.confidenceLabel,
+      );
 
       if (!mounted) {
         return;
@@ -353,7 +359,12 @@ class _DetectPageState extends State<DetectPage> {
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: _isBusy ? null : _classify,
+                      onPressed: _isBusy
+                          ? null
+                          : () async {
+                              HapticFeedback.mediumImpact();
+                              await _classify();
+                            },
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         textStyle: theme.textTheme.titleMedium?.copyWith(

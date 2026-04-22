@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/classification_result.dart';
 import '../models/environmental_report.dart';
 import '../models/gamification_models.dart';
 import '../models/history_entry.dart';
@@ -38,6 +39,8 @@ class _DashboardPageState extends State<DashboardPage> {
   AppGamificationSummary? _summary;
   DetectionHistoryItem? _latestHistory;
   EnvironmentalReport? _latestReport;
+  String _organicAverageConfidenceLabel = '-';
+  String _anorganicAverageConfidenceLabel = '-';
 
   @override
   void initState() {
@@ -70,6 +73,14 @@ class _DashboardPageState extends State<DashboardPage> {
       _summary = summary;
       _latestHistory = history.isEmpty ? null : history.first;
       _latestReport = reports.isEmpty ? null : reports.first;
+      _organicAverageConfidenceLabel = _buildAverageConfidenceLabel(
+        history,
+        WasteCategory.organik,
+      );
+      _anorganicAverageConfidenceLabel = _buildAverageConfidenceLabel(
+        history,
+        WasteCategory.anorganik,
+      );
       _isLoading = false;
     });
   }
@@ -78,6 +89,26 @@ class _DashboardPageState extends State<DashboardPage> {
     final day = value.day.toString().padLeft(2, '0');
     final month = value.month.toString().padLeft(2, '0');
     return '$day/$month/${value.year}';
+  }
+
+  String _buildAverageConfidenceLabel(
+    List<DetectionHistoryItem> history,
+    WasteCategory category,
+  ) {
+    final filtered = history
+        .where((item) => item.result.category == category)
+        .toList();
+
+    if (filtered.isEmpty) {
+      return 'Belum ada data';
+    }
+
+    final total = filtered.fold<double>(
+      0,
+      (sum, item) => sum + item.result.confidence,
+    );
+    final average = (total / filtered.length) * 100;
+    return 'Rata-rata ${average.toStringAsFixed(1)}%';
   }
 
   @override
@@ -113,11 +144,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 title: 'Organik',
                 value: summary.organicCount.toString(),
                 icon: Icons.eco_outlined,
+                subtitle: _organicAverageConfidenceLabel,
               ),
               _StatCard(
                 title: 'Anorganik',
                 value: summary.anorganicCount.toString(),
                 icon: Icons.recycling_outlined,
+                subtitle: _anorganicAverageConfidenceLabel,
               ),
               _StatCard(
                 title: 'Poin',
@@ -148,12 +181,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 onTap: () => widget.onOpenFeature(AppFeature.detect),
               ),
               _FeatureCard(
-                title: 'Riwayat Scan',
-                subtitle: 'Riwayat lengkap dengan hapus satuan dan massal.',
-                icon: Icons.history_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.history),
-              ),
-              _FeatureCard(
                 title: 'Panduan Pemilahan',
                 subtitle: 'Alur pembuangan, contoh, dan langkah lanjutan.',
                 icon: Icons.rule_folder_outlined,
@@ -166,22 +193,16 @@ class _DashboardPageState extends State<DashboardPage> {
                 onTap: () => widget.onOpenFeature(AppFeature.education),
               ),
               _FeatureCard(
-                title: 'Reward & Point',
-                subtitle: 'Poin, badge, dan leaderboard pengguna aktif.',
-                icon: Icons.emoji_events_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.rewards),
+                title: 'Eco Challenges',
+                subtitle: 'Tantangan mingguan untuk mendorong konsistensi.',
+                icon: Icons.flag_outlined,
+                onTap: () => widget.onOpenFeature(AppFeature.challenges),
               ),
               _FeatureCard(
                 title: 'Laporan Lingkungan',
                 subtitle: 'Buat laporan lokasi sampah lengkap dengan foto.',
                 icon: Icons.report_gmailerrorred_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.report),
-              ),
-              _FeatureCard(
-                title: 'Eco Challenges',
-                subtitle: 'Tantangan mingguan untuk mendorong konsistensi.',
-                icon: Icons.flag_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.challenges),
               ),
               _FeatureCard(
                 title: 'Lokasi Pengelolaan',
@@ -452,12 +473,14 @@ class _HeroChip extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String title;
   final String value;
+  final String? subtitle;
   final IconData icon;
 
   const _StatCard({
     required this.title,
     required this.value,
     required this.icon,
+    this.subtitle,
   });
 
   @override
@@ -511,6 +534,22 @@ class _StatCard extends StatelessWidget {
                           .headlineSmall
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
                   ],
                 ),
               ),

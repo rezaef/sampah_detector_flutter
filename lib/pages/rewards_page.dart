@@ -35,8 +35,8 @@ class _RewardsPageState extends State<RewardsPage> {
       icon: Icons.card_giftcard_outlined,
     ),
     _RewardTier(
-      title: 'Top rank community',
-      subtitle: 'Masuk jajaran leaderboard pengguna paling konsisten.',
+      title: 'Eco consistency',
+      subtitle: 'Reward tambahan untuk pengguna yang konsisten scan sampah.',
       pointsRequired: 280,
       icon: Icons.emoji_events_outlined,
     ),
@@ -135,22 +135,6 @@ class _RewardsPageState extends State<RewardsPage> {
             ),
           ),
           const SizedBox(height: 24),
-          const _RewardSectionHeader(
-            title: 'Reward aktif',
-            subtitle:
-                'Level reward berikutnya langsung terlihat berdasarkan total poin saat ini.',
-          ),
-          const SizedBox(height: 12),
-          ..._rewardTiers.map(
-            (tier) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _RewardTierCard(
-                tier: tier,
-                currentPoints: summary.points,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(18),
@@ -219,17 +203,17 @@ class _RewardsPageState extends State<RewardsPage> {
           ),
           const SizedBox(height: 24),
           const _RewardSectionHeader(
-            title: 'Leaderboard',
+            title: 'Reward aktif',
             subtitle:
-                'Ranking pengguna dihitung dari kombinasi scan, laporan, dan challenge yang selesai.',
+                'Level reward berikutnya langsung terlihat berdasarkan total poin saat ini.',
           ),
           const SizedBox(height: 12),
-          ...summary.leaderboard.asMap().entries.map(
-            (entry) => Padding(
+          ..._rewardTiers.map(
+            (tier) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _LeaderboardCard(
-                rank: entry.key + 1,
-                item: entry.value,
+              child: _RewardTierCard(
+                tier: tier,
+                currentPoints: summary.points,
               ),
             ),
           ),
@@ -312,10 +296,6 @@ class _RewardHero extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _RewardChip(
-                  icon: Icons.leaderboard_outlined,
-                  label: 'Rank #${summary.currentRank}',
-                ),
                 _RewardChip(
                   icon: Icons.workspace_premium_outlined,
                   label:
@@ -603,59 +583,6 @@ class _RewardTierCard extends StatelessWidget {
   }
 }
 
-class _LeaderboardCard extends StatelessWidget {
-  final int rank;
-  final LeaderboardEntry item;
-
-  const _LeaderboardCard({required this.rank, required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    final highlight = item.isCurrentUser;
-
-    return Card(
-      color: highlight
-          ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.42)
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: highlight
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.surfaceContainerHighest,
-              foregroundColor: highlight
-                  ? Colors.white
-                  : Theme.of(context).colorScheme.onSurface,
-              child: Text('#$rank'),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('${item.points} poin'),
-                ],
-              ),
-            ),
-            if (highlight)
-              const Chip(label: Text('Kamu')),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _RewardTier {
   final String title;
