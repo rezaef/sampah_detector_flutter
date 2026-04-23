@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/gamification_models.dart';
+import '../models/reward_item.dart';
+import '../services/api_client.dart';
 import '../services/gamification_service.dart';
+import '../services/reward_service.dart';
 
 class RewardsPage extends StatefulWidget {
   final int refreshToken;
@@ -19,57 +22,102 @@ class RewardsPage extends StatefulWidget {
 
 class _RewardsPageState extends State<RewardsPage> {
   bool _isLoading = true;
+  bool _isRedeeming = false;
   AppGamificationSummary? _summary;
-
-  final List<_RewardTier> _rewardTiers = const [
-    _RewardTier(
-      title: 'Badge Bronze',
-      subtitle: 'Akses badge pertama untuk pengguna aktif.',
-      pointsRequired: 80,
-      icon: Icons.workspace_premium_outlined,
-    ),
-    _RewardTier(
-      title: 'Voucher bank sampah',
-      subtitle: 'Insentif penukaran untuk aktivitas daur ulang.',
-      pointsRequired: 180,
-      icon: Icons.card_giftcard_outlined,
-    ),
-    _RewardTier(
-      title: 'Eco consistency',
-      subtitle: 'Reward tambahan untuk pengguna yang konsisten scan sampah.',
-      pointsRequired: 280,
-      icon: Icons.emoji_events_outlined,
-    ),
-  ];
+  List<RewardItem> _rewards = <RewardItem>[];
 
   @override
   void initState() {
     super.initState();
-    _loadSummary();
+    _loadData();
   }
 
   @override
   void didUpdateWidget(covariant RewardsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.refreshToken != widget.refreshToken) {
-      _loadSummary();
+      _loadData();
     }
   }
 
-  Future<void> _loadSummary() async {
+  Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
     });
 
-    final summary = await GamificationService.instance.buildSummary();
-    if (!mounted) {
+    try {
+      final results = await Future.wait<dynamic>([
+        GamificationService.instance.buildSummary(),
+        RewardService.instance.loadRewards(),
+      ]);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _summary = results[0] as AppGamificationSummary;
+        _rewards = results[1] as List<RewardItem>;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isLoading = false;
+      });
+      _showMessage(_resolveMessage(error, fallback: 'Data reward gagal dimuat.'));
+    }
+  }
+
+  Future<void> _redeemReward(RewardItem reward) async {
+    final summary = _summary;
+    if (summary == null || _isRedeeming) {
+      return;
+    }
+    if (summary.points < reward.pointsCost) {
+      _showMessage('Poin belum mencukupi untuk menukar reward ini.');
+      return;
+    }
+    if (reward.isOutOfStock) {
+      _showMessage('Stok reward sedang habis.');
       return;
     }
 
     setState(() {
-      _summary = summary;
-      _isLoading = false;
+      _isRedeeming = true;
     });
+
+    try {
+      await RewardService.instance.redeemReward(reward.id);
+      if (!mounted) {
+        return;
+      }
+      _showMessage('Reward berhasil ditukar.');
+      await _loadData();
+    } catch (error) {
+      _showMessage(_resolveMessage(error, fallback: 'Penukaran reward gagal.'));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRedeeming = false;
+        });
+      }
+    }
+  }
+
+  String _resolveMessage(Object error, {required String fallback}) {
+    if (error is ApiException) {
+      return error.message;
+    }
+    return fallback;
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -81,7 +129,7 @@ class _RewardsPageState extends State<RewardsPage> {
     final summary = _summary!;
 
     return RefreshIndicator(
-      onRefresh: _loadSummary,
+      onRefresh: _loadData,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -147,16 +195,12 @@ class _RewardsPageState extends State<RewardsPage> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer,
+                          color: Theme.of(context).colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           Icons.flag_outlined,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -205,18 +249,44 @@ class _RewardsPageState extends State<RewardsPage> {
           const _RewardSectionHeader(
             title: 'Reward aktif',
             subtitle:
-                'Level reward berikutnya langsung terlihat berdasarkan total poin saat ini.',
+                'Reward berikutnya ditampilkan langsung dari sistem backend.',
           ),
           const SizedBox(height: 12),
-          ..._rewardTiers.map(
-            (tier) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _RewardTierCard(
-                tier: tier,
-                currentPoints: summary.points,
+          if (_rewards.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.card_giftcard_outlined,
+                      size: 40,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Belum ada reward aktif.',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._rewards.map(
+              (reward) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _RewardItemCard(
+                  reward: reward,
+                  currentPoints: summary.points,
+                  isSubmitting: _isRedeeming,
+                  onRedeem: () => _redeemReward(reward),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -408,8 +478,7 @@ class _RewardSectionHeader extends StatelessWidget {
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color:
-                    Theme.of(context).colorScheme.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
       ],
@@ -469,13 +538,8 @@ class _BadgeCard extends StatelessWidget {
               badge.description,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ),
@@ -487,9 +551,7 @@ class _BadgeCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              isUnlocked
-                  ? 'Aktif'
-                  : 'Butuh ${badge.minPoints} poin',
+              isUnlocked ? 'Aktif' : 'Butuh ${badge.minPoints} poin',
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w700,
@@ -502,78 +564,118 @@ class _BadgeCard extends StatelessWidget {
   }
 }
 
-class _RewardTierCard extends StatelessWidget {
-  final _RewardTier tier;
+class _RewardItemCard extends StatelessWidget {
+  final RewardItem reward;
   final int currentPoints;
+  final bool isSubmitting;
+  final VoidCallback onRedeem;
 
-  const _RewardTierCard({
-    required this.tier,
+  const _RewardItemCard({
+    required this.reward,
     required this.currentPoints,
+    required this.isSubmitting,
+    required this.onRedeem,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isUnlocked = currentPoints >= tier.pointsRequired;
-    final remaining = (tier.pointsRequired - currentPoints).clamp(0, tier.pointsRequired);
+    final isEligible = currentPoints >= reward.pointsCost;
+    final remaining = (reward.pointsCost - currentPoints).clamp(0, reward.pointsCost);
+    final isOutOfStock = reward.isOutOfStock;
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                tier.icon,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.card_giftcard_outlined,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reward.title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        reward.description.isEmpty
+                            ? 'Reward aktif dari sistem poin.'
+                            : reward.description,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tier.title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Chip(label: Text('${reward.pointsCost} poin')),
+                Chip(label: Text(reward.stock == null ? 'Stok tidak dibatasi' : 'Stok ${reward.stock}')),
+              ],
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: (currentPoints / reward.pointsCost).clamp(0, 1),
+              minHeight: 10,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              isOutOfStock
+                  ? 'Stok reward sedang habis'
+                  : isEligible
+                      ? 'Syarat poin terpenuhi'
+                      : '$remaining poin lagi untuk menukar reward ini',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    tier.subtitle,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: (!isEligible || isOutOfStock || isSubmitting)
+                    ? null
+                    : onRedeem,
+                icon: isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
                         ),
-                  ),
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: (currentPoints / tier.pointsRequired).clamp(0, 1),
-                    minHeight: 10,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    isUnlocked
-                        ? 'Syarat poin terpenuhi'
-                        : '$remaining poin lagi untuk membuka reward ini',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                ],
+                      )
+                    : const Icon(Icons.redeem_outlined),
+                label: Text(isOutOfStock ? 'Stok habis' : 'Tukar reward'),
               ),
             ),
           ],
@@ -581,19 +683,4 @@ class _RewardTierCard extends StatelessWidget {
       ),
     );
   }
-}
-
-
-class _RewardTier {
-  final String title;
-  final String subtitle;
-  final int pointsRequired;
-  final IconData icon;
-
-  const _RewardTier({
-    required this.title,
-    required this.subtitle,
-    required this.pointsRequired,
-    required this.icon,
-  });
 }

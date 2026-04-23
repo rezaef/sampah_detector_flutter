@@ -1,5 +1,17 @@
 enum WasteCategory { organik, anorganik, tidakDiketahui }
 
+double _toDouble(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString()) ?? 0;
+}
+
+int _toInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString()) ?? 0;
+}
+
 class ClassificationResult {
   final WasteCategory category;
   final double confidence;
@@ -99,7 +111,7 @@ class ClassificationResult {
 
     if (rawScores is Map) {
       rawScores.forEach((key, value) {
-        parsedScores[key.toString()] = (value as num).toDouble();
+        parsedScores[key.toString()] = _toDouble(value);
       });
     }
 
@@ -111,11 +123,11 @@ class ClassificationResult {
 
     return ClassificationResult(
       category: category,
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+      confidence: _toDouble(json['confidence']),
       scores: parsedScores,
       isDemo: json['isDemo'] as bool? ?? false,
       engine: json['engine']?.toString() ?? 'unknown',
-      latencyMs: (json['latencyMs'] as num?)?.toInt() ?? 0,
+      latencyMs: _toInt(json['latencyMs']),
     );
   }
 }

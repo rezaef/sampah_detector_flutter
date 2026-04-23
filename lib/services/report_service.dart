@@ -1,56 +1,54 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/environmental_report.dart';
+import 'api_client.dart';
 
 class ReportService {
   ReportService._();
 
   static final ReportService instance = ReportService._();
-  static const _storageKey = 'environmental_reports';
 
   Future<List<EnvironmentalReport>> loadReports() async {
-    final prefs = await SharedPreferences.getInstance();
-    final rawList = prefs.getStringList(_storageKey) ?? <String>[];
+    try {
+      final response = await ApiClient.instance.get('/mobile/reports');
+      final payload = response as Map<String, dynamic>;
+      final rawItems = (payload['data'] as List<dynamic>? ?? const <dynamic>[])
+          .whereType<Map<String, dynamic>>()
+          .toList();
 
-    return rawList
-        .map((item) {
-          try {
-            return EnvironmentalReport.fromJson(
-              jsonDecode(item) as Map<String, dynamic>,
-            );
-          } catch (_) {
-            return null;
-          }
-        })
-        .whereType<EnvironmentalReport>()
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-  }
-
-  Future<void> _saveReports(List<EnvironmentalReport> reports) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _storageKey,
-      reports.map((item) => jsonEncode(item.toJson())).toList(),
-    );
+      return rawItems
+          .map(EnvironmentalReport.fromApiJson)
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } on ApiException catch (error) {
+      if (error.statusCode == 401) {
+        return [];
+      }
+      rethrow;
+    }
   }
 
   Future<void> addReport(EnvironmentalReport report) async {
-    final current = await loadReports();
-    current.insert(0, report);
-    await _saveReports(current);
+    await ApiClient.instance.post(
+      '/mobile/reports',
+      body: {
+        'title': report.title,
+        'description': report.description,
+        'category': report.category,
+        'location_name': report.locationName,
+        'urgency': report.urgency,
+        'image_path': report.imagePath,
+        'reported_at': report.createdAt.toIso8601String(),
+      },
+    );
   }
 
   Future<void> removeReportById(String id) async {
-    final current = await loadReports();
-    final updated = current.where((item) => item.id != id).toList();
-    await _saveReports(updated);
+    await ApiClient.instance.delete('/mobile/reports/$id');
   }
 
   Future<void> clearReports() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_storageKey);
+    final items = await loadReports();
+    for (final item in items) {
+      await removeReportById(item.id);
+    }
   }
 }

@@ -1,48 +1,53 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
-
+import '../models/classification_result.dart';
 import '../models/history_entry.dart';
+import 'api_client.dart';
+
+enum HistoryDeleteMode { single, selected, all }
 
 class HistoryService {
   HistoryService._();
 
   static final HistoryService instance = HistoryService._();
-  static const _storageKey = 'waste_detection_history';
 
   Future<List<DetectionHistoryItem>> loadHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    final rawList = prefs.getStringList(_storageKey) ?? <String>[];
+    try {
+      final response = await ApiClient.instance.get('/mobile/classifications');
+      final payload = response as Map<String, dynamic>;
+      final rawItems = (payload['data'] as List<dynamic>? ?? const <dynamic>[])
+          .whereType<Map<String, dynamic>>()
+          .toList();
 
-    return rawList
-        .map((item) {
-          try {
-            return DetectionHistoryItem.fromJson(
-              jsonDecode(item) as Map<String, dynamic>,
-            );
-          } catch (_) {
-            return null;
-          }
-        })
-        .whereType<DetectionHistoryItem>()
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-  }
-
-  Future<void> _saveHistory(List<DetectionHistoryItem> items) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _storageKey,
-      items.map((entry) => jsonEncode(entry.toJson())).toList(),
-    );
+      return rawItems
+          .map(DetectionHistoryItem.fromApiJson)
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } on ApiException catch (error) {
+      if (error.statusCode == 401) {
+        return [];
+      }
+      rethrow;
+    }
   }
 
   Future<void> addHistory(DetectionHistoryItem item) async {
-    final current = await loadHistory();
-    current.insert(0, item);
-
-    final trimmed = current.take(30).toList();
-    await _saveHistory(trimmed);
+    await ApiClient.instance.post(
+      '/mobile/classifications',
+      body: {
+        'image_path': item.imagePath,
+        'category': switch (item.result.category) {
+          WasteCategory.organik => 'organik',
+          WasteCategory.anorganik => 'anorganik',
+          WasteCategory.tidakDiketahui => 'tidak_diketahui',
+        },
+        'confidence': item.result.confidence,
+        'organic_score': item.result.scores['organik'] ?? 0,
+        'anorganic_score': item.result.scores['anorganik'] ?? 0,
+        'unknown_score': item.result.scores['tidak_diketahui'] ?? 0,
+        'engine': item.result.engine,
+        'latency_ms': item.result.latencyMs,
+        'detected_at': item.createdAt.toIso8601String(),
+      },
+    );
   }
 
   Future<void> removeHistoryByIds(Set<String> ids) async {
@@ -50,13 +55,13 @@ class HistoryService {
       return;
     }
 
-    final current = await loadHistory();
-    final updated = current.where((entry) => !ids.contains(entry.id)).toList();
-    await _saveHistory(updated);
+    await ApiClient.instance.delete(
+      '/mobile/classifications',
+      body: {'ids': ids.toList()},
+    );
   }
 
   Future<void> clearHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_storageKey);
+    await ApiClient.instance.delete('/mobile/classifications');
   }
 }

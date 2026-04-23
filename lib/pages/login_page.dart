@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } on AuthException catch (error) {
       _showMessage(error.message);
-    } catch (_) {
+    } catch (error) {
       _showMessage('Proses masuk gagal.');
     } finally {
       if (mounted) {
@@ -59,6 +59,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await AuthService.instance.signInWithGoogleDemo();
+    } on AuthException catch (error) {
+      _showMessage(error.message);
     } catch (_) {
       _showMessage('Masuk dengan Google gagal.');
     } finally {

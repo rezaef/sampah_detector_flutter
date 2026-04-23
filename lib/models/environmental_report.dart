@@ -49,4 +49,21 @@ class EnvironmentalReport {
           DateTime.now(),
     );
   }
+
+  factory EnvironmentalReport.fromApiJson(Map<String, dynamic> json) {
+    return EnvironmentalReport(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      category: json['category']?.toString() ?? 'Laporan lingkungan',
+      locationName: json['location_name']?.toString() ?? '',
+      urgency: json['urgency']?.toString() ?? 'Sedang',
+      status: json['status']?.toString() ?? 'Menunggu verifikasi',
+      imagePath: json['image_path']?.toString(),
+      createdAt: DateTime.tryParse(
+            (json['reported_at'] ?? json['created_at'] ?? '').toString(),
+          ) ??
+          DateTime.now(),
+    );
+  }
 }
