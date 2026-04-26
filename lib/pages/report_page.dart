@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/environmental_report.dart';
 import '../services/report_service.dart';
 import '../services/storage_service.dart';
+import '../widgets/region_dropdown_picker.dart';
 
 class ReportPage extends StatefulWidget {
   final VoidCallback? onReportChanged;
@@ -417,22 +418,27 @@ class _CreateReportPageState extends State<_CreateReportPage> {
   final _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  final List<String> _locations = const [
-    'Ketintang',
-    'Gayungan',
-    'Jemur Wonosari',
-    'Wonokromo',
-    'Dukuh Menanggal',
-  ];
   final List<String> _categories = const [
     'Tumpukan liar',
     'Sampah menutup saluran',
     'Sampah campuran',
     'Area butuh pengangkutan',
+    'Sampah organik menumpuk',
+    'Sampah anorganik menumpuk',
+    'Sampah B3/berbahaya',
+    'Limbah elektronik',
+    'Limbah cair/selokan tercemar',
+    'Bau menyengat',
+    'Pembakaran sampah',
+    'Tempat sampah penuh/rusak',
+    'Fasilitas pengelolaan rusak',
+    'Hewan/vektor penyakit',
+    'Ranting/daun menumpuk',
+    'Lainnya',
   ];
   final List<String> _urgencies = const ['Rendah', 'Sedang', 'Tinggi'];
 
-  String _selectedLocation = 'Ketintang';
+  String _selectedLocation = '';
   String _selectedCategory = 'Tumpukan liar';
   String _selectedUrgency = 'Sedang';
   File? _selectedImage;
@@ -467,6 +473,14 @@ class _CreateReportPageState extends State<_CreateReportPage> {
     if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Foto laporan belum dipilih.')),
+      );
+      return;
+    }
+    if (_selectedLocation.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih lokasi laporan minimal sampai provinsi.'),
+        ),
       );
       return;
     }
@@ -595,29 +609,63 @@ class _CreateReportPageState extends State<_CreateReportPage> {
                       },
                     ),
                     const SizedBox(height: 14),
-                    DropdownButtonFormField<String>(
-                      value: _selectedLocation,
-                      decoration: const InputDecoration(
-                        labelText: 'Lokasi',
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Lokasi laporan',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
-                      items: _locations
-                          .map(
-                            (item) => DropdownMenuItem(
-                              value: item,
-                              child: Text(item),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedLocation = value;
-                          });
-                        }
+                    ),
+                    const SizedBox(height: 8),
+                    RegionDropdownPicker(
+                      compact: true,
+                      initialHelperText:
+                          'Pilih bertahap dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
+                      onChanged: (selection) {
+                        setState(() {
+                          _selectedLocation = selection.areaText;
+                        });
                       },
                     ),
+                    if (_selectedLocation.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withOpacity(0.45),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.place_outlined, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _selectedLocation,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: _selectedCategory,
                       decoration: const InputDecoration(
                         labelText: 'Kategori laporan',
@@ -640,6 +688,7 @@ class _CreateReportPageState extends State<_CreateReportPage> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: _selectedUrgency,
                       decoration: const InputDecoration(
                         labelText: 'Tingkat urgensi',
