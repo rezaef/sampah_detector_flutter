@@ -16,7 +16,7 @@ class BankSampahPage extends StatefulWidget {
   State<BankSampahPage> createState() => _BankSampahPageState();
 }
 
-class _BankSampahPageState extends State<BankSampahPage> {
+class _BankSampahPageState extends State<BankSampahPage> with SingleTickerProviderStateMixin {
   final MapsPlaceService _mapsPlaceService = MapsPlaceService();
   final LocationService _locationService = LocationService();
   GoogleMapController? _googleMapController;
@@ -57,14 +57,79 @@ class _BankSampahPageState extends State<BankSampahPage> {
 
   static const LatLng _defaultCenter = LatLng(-7.3200, 112.7289);
 
+  late final AnimationController _animationController;
+  late final Animation<double> _headerFadeAnimation;
+  late final Animation<Offset> _headerSlideAnimation;
+  late final Animation<double> _regionFadeAnimation;
+  late final Animation<Offset> _regionSlideAnimation;
+  late final Animation<double> _categoriesFadeAnimation;
+  late final Animation<Offset> _categoriesSlideAnimation;
+  late final Animation<double> _mapFadeAnimation;
+  late final Animation<Offset> _mapSlideAnimation;
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 750),
+    );
+
+    _headerFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    );
+    _headerSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    ));
+
+    _regionFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.15, 0.65, curve: Curves.easeOutCubic),
+    );
+    _regionSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.15, 0.65, curve: Curves.easeOutCubic),
+    ));
+
+    _categoriesFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
+    );
+    _categoriesSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
+    ));
+
+    _mapFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.45, 0.95, curve: Curves.easeOutCubic),
+    );
+    _mapSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.45, 0.95, curve: Curves.easeOutCubic),
+    ));
+
+    _animationController.forward();
     _initLocationAndSearch();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _googleMapController?.dispose();
     super.dispose();
   }
@@ -331,132 +396,156 @@ class _BankSampahPageState extends State<BankSampahPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _HeaderCard(
-            title: selectedCategory.label == 'Bank Sampah'
-                ? 'Temukan bank sampah dan titik daur ulang terdekat.'
-                : 'Temukan ${selectedCategory.label.toLowerCase()} di sekitar lokasi Anda.',
-            subtitle: _useManualRegion
-                ? 'Wilayah aktif: $_selectedAreaText'
-                : _currentLat == null
-                    ? 'Pilih wilayah atau aktifkan GPS untuk mencari lokasi terdekat.'
-                    : 'Menampilkan hasil berdasarkan lokasi perangkat saat ini.',
-          ),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1F8A70).withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-              border: Border.all(
-                color: const Color(0xFF1F8A70).withOpacity(0.06),
-                width: 1,
+          FadeTransition(
+            opacity: _headerFadeAnimation,
+            child: SlideTransition(
+              position: _headerSlideAnimation,
+              child: _HeaderCard(
+                title: selectedCategory.label == 'Bank Sampah'
+                    ? 'Temukan bank sampah dan titik daur ulang terdekat.'
+                    : 'Temukan ${selectedCategory.label.toLowerCase()} di sekitar lokasi Anda.',
+                subtitle: _useManualRegion
+                    ? 'Wilayah aktif: $_selectedAreaText'
+                    : _currentLat == null
+                        ? 'Pilih wilayah atau aktifkan GPS untuk mencari lokasi terdekat.'
+                        : 'Menampilkan hasil berdasarkan lokasi perangkat saat ini.',
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Pilih Wilayah Indonesia',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF1B4D3E),
+          ),
+          const SizedBox(height: 16),
+          FadeTransition(
+            opacity: _regionFadeAnimation,
+            child: SlideTransition(
+              position: _regionSlideAnimation,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1F8A70).withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
+                  ],
+                  border: Border.all(
+                    color: const Color(0xFF1F8A70).withOpacity(0.06),
+                    width: 1,
                   ),
-                  const SizedBox(height: 6),
-                  RegionDropdownPicker(
-                    compact: true,
-                    initialHelperText:
-                        'Urutkan pilihan dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
-                    onChanged: _onRegionChanged,
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _useNearestLocation,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Pilih Wilayah Indonesia',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B4D3E),
+                        ),
                       ),
-                    ),
-                    icon: const Icon(Icons.my_location_outlined, size: 20),
-                    label: const Text('Gunakan Lokasi Terdekat Saya', style: TextStyle(fontSize: 14)),
+                      const SizedBox(height: 6),
+                      RegionDropdownPicker(
+                        compact: true,
+                        initialHelperText:
+                            'Urutkan pilihan dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
+                        onChanged: _onRegionChanged,
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: _useNearestLocation,
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.my_location_outlined, size: 20),
+                        label: const Text('Gunakan Lokasi Terdekat Saya', style: TextStyle(fontSize: 14)),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 46,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _categories.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                return ChoiceChip(
-                  avatar: Icon(category.icon, size: 18),
-                  label: Text(category.label),
-                  selected: _selectedCategoryIndex == index,
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedCategoryIndex = index;
-                    });
-                    _searchPlaces();
-                  },
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1F8A70).withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
                 ),
-              ],
-              border: Border.all(
-                color: const Color(0xFF1F8A70).withOpacity(0.06),
-                width: 1,
               ),
             ),
-            child: SizedBox(
-              height: 360,
-              child: Stack(
-                children: [
-                  GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: _initialCenter,
-                      zoom: 13,
+          ),
+          const SizedBox(height: 16),
+          FadeTransition(
+            opacity: _categoriesFadeAnimation,
+            child: SlideTransition(
+              position: _categoriesSlideAnimation,
+              child: SizedBox(
+                height: 46,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final category = _categories[index];
+                    return ChoiceChip(
+                      avatar: Icon(category.icon, size: 18),
+                      label: Text(category.label),
+                      selected: _selectedCategoryIndex == index,
+                      onSelected: (_) {
+                        setState(() {
+                          _selectedCategoryIndex = index;
+                        });
+                        _searchPlaces();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FadeTransition(
+            opacity: _mapFadeAnimation,
+            child: SlideTransition(
+              position: _mapSlideAnimation,
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1F8A70).withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
-                    myLocationEnabled: _currentLat != null && _currentLng != null,
-                    myLocationButtonEnabled: false,
-                    markers: _markers,
-                    onMapCreated: (controller) {
-                      _googleMapController = controller;
-                    },
+                  ],
+                  border: Border.all(
+                    color: const Color(0xFF1F8A70).withOpacity(0.06),
+                    width: 1,
                   ),
-                  if (_isLoading)
-                    Container(
-                      color: Colors.white.withOpacity(0.72),
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                ],
+                ),
+                child: SizedBox(
+                  height: 360,
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: _initialCenter,
+                          zoom: 13,
+                        ),
+                        myLocationEnabled: _currentLat != null && _currentLng != null,
+                        myLocationButtonEnabled: false,
+                        markers: _markers,
+                        onMapCreated: (controller) {
+                          _googleMapController = controller;
+                        },
+                      ),
+                      if (_isLoading)
+                        Container(
+                          color: Colors.white.withOpacity(0.72),
+                          child: const Center(child: CircularProgressIndicator()),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -469,14 +558,26 @@ class _BankSampahPageState extends State<BankSampahPage> {
           ],
           if (selectedPlace != null) ...[
             const SizedBox(height: 16),
-            _SelectedPlaceCard(
-              place: selectedPlace,
-              distanceLabel: _distanceLabel(selectedPlace),
-              onFocus: () => _moveCameraTo(
-                LatLng(selectedPlace.latitude, selectedPlace.longitude),
-                zoom: 16,
+            TweenAnimationBuilder<double>(
+              key: ValueKey('selected_place_${selectedPlace.id}'),
+              tween: Tween<double>(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return Transform.translate(
+                  offset: Offset(0, 16 * (1 - value)),
+                  child: Opacity(opacity: value, child: child),
+                );
+              },
+              child: _SelectedPlaceCard(
+                place: selectedPlace,
+                distanceLabel: _distanceLabel(selectedPlace),
+                onFocus: () => _moveCameraTo(
+                  LatLng(selectedPlace.latitude, selectedPlace.longitude),
+                  zoom: 16,
+                ),
+                onOpenMaps: () => _openInMaps(selectedPlace),
               ),
-              onOpenMaps: () => _openInMaps(selectedPlace),
             ),
           ],
           const SizedBox(height: 20),
@@ -521,24 +622,40 @@ class _BankSampahPageState extends State<BankSampahPage> {
             )
           else
             ..._places.asMap().entries.map(
-                  (entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _PlaceListCard(
-                      place: entry.value,
-                      isSelected: entry.key == _selectedPlaceIndex,
-                      distanceLabel: _distanceLabel(entry.value),
-                      onTap: () {
-                        setState(() {
-                          _selectedPlaceIndex = entry.key;
-                        });
-                        _moveCameraTo(
-                          LatLng(entry.value.latitude, entry.value.longitude),
-                          zoom: 16,
+                  (entry) {
+                    final index = entry.key;
+                    final place = entry.value;
+                    return TweenAnimationBuilder<double>(
+                      key: ValueKey('place_${place.id}'),
+                      tween: Tween<double>(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 350 + (index * 80)),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 16 * (1 - value)),
+                          child: Opacity(opacity: value, child: child),
                         );
                       },
-                      onOpenMaps: () => _openInMaps(entry.value),
-                    ),
-                  ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _PlaceListCard(
+                          place: place,
+                          isSelected: index == _selectedPlaceIndex,
+                          distanceLabel: _distanceLabel(place),
+                          onTap: () {
+                            setState(() {
+                              _selectedPlaceIndex = index;
+                            });
+                            _moveCameraTo(
+                              LatLng(place.latitude, place.longitude),
+                              zoom: 16,
+                            );
+                          },
+                          onOpenMaps: () => _openInMaps(place),
+                        ),
+                      ),
+                    );
+                  },
                 ),
         ],
       ),

@@ -120,6 +120,24 @@ class _RewardsPageState extends State<RewardsPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Widget _animateItem({required int index, required Widget child}) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (index * 80)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 16 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _summary == null) {
@@ -134,159 +152,226 @@ class _RewardsPageState extends State<RewardsPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _RewardHero(summary: summary),
+          _animateItem(
+            index: 0,
+            child: _RewardHero(summary: summary),
+          ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _RewardStatCard(
-                  title: 'Scan',
-                  value: summary.totalScans.toString(),
-                  icon: Icons.qr_code_scanner_outlined,
+          _animateItem(
+            index: 1,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _RewardStatCard(
+                    title: 'Scan',
+                    value: summary.totalScans.toString(),
+                    icon: Icons.qr_code_scanner_outlined,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _RewardStatCard(
-                  title: 'Laporan',
-                  value: summary.reportCount.toString(),
-                  icon: Icons.report_gmailerrorred_outlined,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _RewardStatCard(
+                    title: 'Laporan',
+                    value: summary.reportCount.toString(),
+                    icon: Icons.report_gmailerrorred_outlined,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _RewardStatCard(
-                  title: 'Challenge',
-                  value: summary.completedChallenges.toString(),
-                  icon: Icons.flag_outlined,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _RewardStatCard(
+                    title: 'Challenge',
+                    value: summary.completedChallenges.toString(),
+                    icon: Icons.flag_outlined,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          const _RewardSectionHeader(
-            title: 'Badge pengguna',
-            subtitle:
-                'Progres badge mengikuti akumulasi poin dan konsistensi penggunaan fitur.',
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 196,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                final badge = summary.badges[index];
-                return _BadgeCard(badge: badge);
-              },
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemCount: summary.badges.length,
+              ],
             ),
           ),
           const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Icon(
-                          Icons.flag_outlined,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Tantangan Aktif',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Buka halaman tantangan untuk melihat progres detail dan target berikutnya.',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: widget.onOpenChallenges,
-                      icon: const Icon(Icons.arrow_forward_outlined),
-                      label: const Text('Lihat tantangan'),
-                    ),
+          _animateItem(
+            index: 2,
+            child: const _RewardSectionHeader(
+              title: 'Badge pengguna',
+              subtitle: 'Progres badge mengikuti akumulasi poin dan konsistensi penggunaan fitur.',
+            ),
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 3,
+            child: SizedBox(
+              height: 196,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final badge = summary.badges[index];
+                  return _BadgeCard(badge: badge);
+                },
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemCount: summary.badges.length,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _animateItem(
+            index: 4,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1F8A70).withOpacity(0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
+                border: Border.all(
+                  color: const Color(0xFF1F8A70).withOpacity(0.06),
+                  width: 1,
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const _RewardSectionHeader(
-            title: 'Reward aktif',
-            subtitle:
-                'Reward berikutnya ditampilkan langsung dari sistem backend.',
-          ),
-          const SizedBox(height: 12),
-          if (_rewards.isEmpty)
-            Card(
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.card_giftcard_outlined,
-                      size: 40,
-                      color: Theme.of(context).colorScheme.primary,
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F8A70).withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.flag_outlined,
+                            color: Color(0xFF1F8A70),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Tantangan Aktif',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF1B4D3E),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Buka halaman tantangan untuk melihat progres detail dan target berikutnya.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: const Color(0xFF507A6D),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Belum ada reward aktif.',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: widget.onOpenChallenges,
+                        icon: const Icon(Icons.arrow_forward_outlined),
+                        label: const Text('Lihat tantangan'),
+                      ),
                     ),
                   ],
                 ),
               ),
-            )
-          else
-            ..._rewards.map(
-              (reward) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _RewardItemCard(
-                  reward: reward,
-                  currentPoints: summary.points,
-                  isSubmitting: _isRedeeming,
-                  onRedeem: () => _redeemReward(reward),
-                ),
-              ),
             ),
+          ),
+          const SizedBox(height: 24),
+          _animateItem(
+            index: 5,
+            child: const _RewardSectionHeader(
+              title: 'Reward aktif',
+              subtitle: 'Reward berikutnya ditampilkan langsung dari sistem backend.',
+            ),
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 6,
+            child: _rewards.isEmpty
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF1F8A70).withOpacity(0.04),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: const Color(0xFF1F8A70).withOpacity(0.06),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.card_giftcard_outlined,
+                            size: 40,
+                            color: Color(0xFF1F8A70),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Belum ada reward aktif.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w800, color: const Color(0xFF1B4D3E)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: _rewards.asMap().entries.map(
+                      (entry) {
+                        final i = entry.key;
+                        final reward = entry.value;
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                          duration: Duration(milliseconds: 400 + (i * 120)),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, val, child) {
+                            return Transform.translate(
+                              offset: Offset(0, 16 * (1 - val)),
+                              child: Opacity(
+                                opacity: val,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _RewardItemCard(
+                              reward: reward,
+                              currentPoints: summary.points,
+                              isSubmitting: _isRedeeming,
+                              onRedeem: () => _redeemReward(reward),
+                            ),
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ),
+          ),
         ],
       ),
     );
@@ -728,12 +813,19 @@ class _RewardItemCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(999),
-              backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
-              valueColor: const AlwaysStoppedAnimation(Color(0xFF1F8A70)),
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: progress),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (context, val, child) {
+                return LinearProgressIndicator(
+                  value: val,
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(999),
+                  backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
+                  valueColor: const AlwaysStoppedAnimation(Color(0xFF1F8A70)),
+                );
+              },
             ),
             const SizedBox(height: 10),
             Text(

@@ -28,7 +28,7 @@ class DetectPage extends StatefulWidget {
   State<DetectPage> createState() => _DetectPageState();
 }
 
-class _DetectPageState extends State<DetectPage> {
+class _DetectPageState extends State<DetectPage> with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _resultSectionKey = GlobalKey();
@@ -40,14 +40,51 @@ class _DetectPageState extends State<DetectPage> {
   bool _isInitializing = true;
   String? _errorMessage;
 
+  late final AnimationController _animationController;
+  late final Animation<double> _heroFadeAnimation;
+  late final Animation<Offset> _heroSlideAnimation;
+  late final Animation<double> _pickerFadeAnimation;
+  late final Animation<Offset> _pickerSlideAnimation;
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _heroFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+    );
+    _heroSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+    ));
+
+    _pickerFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.18, 0.78, curve: Curves.easeOutCubic),
+    );
+    _pickerSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.18, 0.78, curve: Curves.easeOutCubic),
+    ));
+
+    _animationController.forward();
     _initialize();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -230,32 +267,49 @@ class _DetectPageState extends State<DetectPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
-        _HeroCard(isUsingModel: usingModel, isInitializing: _isInitializing),
-        const SizedBox(height: 16),
-        const _SectionTitle(
-          title: 'Ambil gambar sampah',
-          subtitle:
-              'Foto langsung dari kamera atau pilih dari galeri perangkat Anda.',
+        FadeTransition(
+          opacity: _heroFadeAnimation,
+          child: SlideTransition(
+            position: _heroSlideAnimation,
+            child: _HeroCard(isUsingModel: usingModel, isInitializing: _isInitializing),
+          ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _isBusy ? null : () => _pickImage(ImageSource.camera),
-                icon: const Icon(Icons.camera_alt_outlined),
-                label: const Text('Kamera'),
-              ),
+        const SizedBox(height: 16),
+        FadeTransition(
+          opacity: _pickerFadeAnimation,
+          child: SlideTransition(
+            position: _pickerSlideAnimation,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(
+                  title: 'Ambil gambar sampah',
+                  subtitle:
+                      'Foto langsung dari kamera atau pilih dari galeri perangkat Anda.',
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _isBusy ? null : () => _pickImage(ImageSource.camera),
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        label: const Text('Kamera'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isBusy ? null : () => _pickImage(ImageSource.gallery),
+                        icon: const Icon(Icons.photo_library_outlined),
+                        label: const Text('Galeri'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _isBusy ? null : () => _pickImage(ImageSource.gallery),
-                icon: const Icon(Icons.photo_library_outlined),
-                label: const Text('Galeri'),
-              ),
-            ),
-          ],
+          ),
         ),
         if (_isInitializing) ...[
           const SizedBox(height: 24),
@@ -263,163 +317,198 @@ class _DetectPageState extends State<DetectPage> {
         ],
         if (_selectedImage != null) ...[
           const SizedBox(height: 18),
-          Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1F8A70).withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+          TweenAnimationBuilder<double>(
+            key: const ValueKey('selected_image_anim'),
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 16 * (1 - value)),
+                child: Opacity(
+                  opacity: value,
+                  child: child,
                 ),
-              ],
-              border: Border.all(
-                color: const Color(0xFF1F8A70).withOpacity(0.06),
-                width: 1,
+              );
+            },
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1F8A70).withOpacity(0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+                border: Border.all(
+                  color: const Color(0xFF1F8A70).withOpacity(0.06),
+                  width: 1,
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 16 / 10,
-                      child: Image.file(
-                        _selectedImage!,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Positioned(
-                      left: 14,
-                      bottom: 14,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.55),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.image_outlined,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 6),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 210),
-                              child: Text(
-                                _selectedImage!.path.split('/').last,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
                     children: [
-                      Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F8A70).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.auto_awesome,
-                          color: Color(0xFF1F8A70),
+                      AspectRatio(
+                        aspectRatio: 16 / 10,
+                        child: Image.file(
+                          _selectedImage!,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Gambar berhasil dimuat',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: const Color(0xFF1B4D3E),
+                      Positioned(
+                        left: 14,
+                        bottom: 14,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.55),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.image_outlined,
+                                size: 16,
+                                color: Colors.white,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tekan tombol di bawah untuk memulai klasifikasi. Gambar akan di-resize ke 192×192 piksel dan diproses oleh model MobileNetV2.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF507A6D),
+                              const SizedBox(width: 6),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 210),
+                                child: Text(
+                                  _selectedImage!.path.split('/').last,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _isBusy
-                          ? null
-                          : () async {
-                              HapticFeedback.mediumImpact();
-                              await _classify();
-                            },
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F8A70).withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF1F8A70),
+                          ),
                         ),
-                      ),
-                      icon: _isBusy
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                color: Colors.white,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Gambar berhasil dimuat',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF1B4D3E),
+                                ),
                               ),
-                            )
-                          : const Icon(Icons.auto_awesome),
-                      label: Text(
-                        _isBusy ? 'Mengklasifikasi...' : 'Klasifikasi sekarang',
+                              const SizedBox(height: 4),
+                              Text(
+                                'Tekan tombol di bawah untuk memulai klasifikasi. Gambar akan di-resize ke 192×192 piksel dan diproses oleh model MobileNetV2.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: const Color(0xFF507A6D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _isBusy
+                            ? null
+                            : () async {
+                                HapticFeedback.mediumImpact();
+                                await _classify();
+                              },
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          textStyle: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        icon: _isBusy
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.auto_awesome),
+                        label: Text(
+                          _isBusy ? 'Mengklasifikasi...' : 'Klasifikasi sekarang',
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
         if (_bundle != null && _selectedImage != null) ...[
           const SizedBox(height: 16),
-          const _SectionTitle(
-            title: 'Tahapan preprocessing',
-            subtitle:
-                'Visualisasi setiap langkah: resize, CLAHE (peningkatan kontras), normalisasi, dan deteksi tepi.',
-          ),
-          const SizedBox(height: 12),
-          PreprocessingPreview(
-            originalFile: _selectedImage!,
-            clahePreview: _bundle!.clahePreview,
-            processedPreview: _bundle!.processedPreview,
-            edgePreview: _bundle!.edgePreview,
+          TweenAnimationBuilder<double>(
+            key: const ValueKey('preprocessing_anim'),
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 450),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 16 * (1 - value)),
+                child: Opacity(
+                  opacity: value,
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(
+                  title: 'Tahapan preprocessing',
+                  subtitle:
+                      'Visualisasi setiap langkah: resize, CLAHE (peningkatan kontras), normalisasi, dan deteksi tepi.',
+                ),
+                const SizedBox(height: 12),
+                PreprocessingPreview(
+                  originalFile: _selectedImage!,
+                  clahePreview: _bundle!.clahePreview,
+                  processedPreview: _bundle!.processedPreview,
+                  edgePreview: _bundle!.edgePreview,
+                ),
+              ],
+            ),
           ),
         ],
         if (_isBusy && _result == null) ...[
@@ -428,16 +517,36 @@ class _DetectPageState extends State<DetectPage> {
         ],
         if (_result != null) ...[
           const SizedBox(height: 18),
-          _SectionTitle(
-            key: _resultSectionKey,
-            title: 'Hasil klasifikasi',
-            subtitle:
-                'Label prediksi, skor confidence per kelas, dan rekomendasi penanganan sampah.',
-          ),
-          const SizedBox(height: 12),
-          ResultCard(
-            result: _result!,
-            onOpenGuide: widget.onOpenGuide,
+          TweenAnimationBuilder<double>(
+            key: const ValueKey('result_anim'),
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: Opacity(
+                  opacity: value,
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SectionTitle(
+                  key: _resultSectionKey,
+                  title: 'Hasil klasifikasi',
+                  subtitle:
+                      'Label prediksi, skor confidence per kelas, dan rekomendasi penanganan sampah.',
+                ),
+                const SizedBox(height: 12),
+                ResultCard(
+                  result: _result!,
+                  onOpenGuide: widget.onOpenGuide,
+                ),
+              ],
+            ),
           ),
         ],
         if (_errorMessage != null) ...[

@@ -10,7 +10,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -18,8 +18,78 @@ class _LoginPageState extends State<LoginPage> {
   bool _isSubmitting = false;
   bool _isGoogleLoading = false;
 
+  late final AnimationController _animationController;
+  late final Animation<double> _logoFadeAnimation;
+  late final Animation<Offset> _logoSlideAnimation;
+  late final Animation<double> _googleFadeAnimation;
+  late final Animation<Offset> _googleSlideAnimation;
+  late final Animation<double> _formFadeAnimation;
+  late final Animation<Offset> _formSlideAnimation;
+  late final Animation<double> _buttonFadeAnimation;
+  late final Animation<Offset> _buttonSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _logoFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    );
+    _logoSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    ));
+
+    _googleFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 0.7, curve: Curves.easeOutCubic),
+    );
+    _googleSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 0.7, curve: Curves.easeOutCubic),
+    ));
+
+    _formFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.4, 0.9, curve: Curves.easeOutCubic),
+    );
+    _formSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.4, 0.9, curve: Curves.easeOutCubic),
+    ));
+
+    _buttonFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.55, 1.0, curve: Curves.easeOutCubic),
+    );
+    _buttonSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.55, 1.0, curve: Curves.easeOutCubic),
+    ));
+
+    _animationController.forward();
+  }
+
   @override
   void dispose() {
+    _animationController.dispose();
     _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -81,7 +151,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: Container(
@@ -119,229 +188,265 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF1F8A70), Color(0xFF5BC0A5)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF1F8A70).withOpacity(0.2),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 8),
+                        FadeTransition(
+                          opacity: _logoFadeAnimation,
+                          child: SlideTransition(
+                            position: _logoSlideAnimation,
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(24),
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF1F8A70), Color(0xFF5BC0A5)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF1F8A70).withOpacity(0.2),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Icons.recycling_rounded,
+                                      color: Colors.white,
+                                      size: 42,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Center(
+                                  child: Text(
+                                    'Selamat Datang',
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                      color: const Color(0xFF1B4D3E),
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Center(
+                                  child: Text(
+                                    'Masuk untuk mengakses klasifikasi sampah offline dan pelaporan.',
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: const Color(0xFF507A6D),
+                                      height: 1.3,
+                                    ),
+                                  ),
                                 ),
                               ],
-                            ),
-                            child: const Icon(
-                              Icons.recycling_rounded,
-                              color: Colors.white,
-                              size: 42,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Center(
-                          child: Text(
-                            'Selamat Datang',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              color: const Color(0xFF1B4D3E),
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Center(
-                          child: Text(
-                            'Masuk untuk mengakses klasifikasi sampah offline dan pelaporan.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: const Color(0xFF507A6D),
-                              height: 1.3,
                             ),
                           ),
                         ),
                         const SizedBox(height: 32),
-                        OutlinedButton(
-                          onPressed: _isGoogleLoading ? null : _continueWithGoogle,
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF1B4D3E),
-                            side: BorderSide(
-                              color: const Color(0xFF1F8A70).withOpacity(0.2),
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_isGoogleLoading)
-                                const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(Color(0xFF1F8A70)),
-                                  ),
-                                )
-                              else
-                                const Icon(
-                                  Icons.g_mobiledata_rounded,
-                                  size: 32,
-                                  color: Color(0xFF1F8A70),
-                                ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Masuk dengan Google',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Divider(color: const Color(0xFF1F8A70).withOpacity(0.12)),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                'atau dengan email',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF6B8A80),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Divider(color: const Color(0xFF1F8A70).withOpacity(0.12)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextFormField(
-                                controller: _identifierController,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                                decoration: const InputDecoration(
-                                  labelText: 'Username atau Email',
-                                  prefixIcon: Icon(Icons.person_outline_rounded, color: Color(0xFF1F8A70)),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Username atau email wajib diisi';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF1F8A70)),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                      color: const Color(0xFF6B8A80),
+                        FadeTransition(
+                          opacity: _googleFadeAnimation,
+                          child: SlideTransition(
+                            position: _googleSlideAnimation,
+                            child: Column(
+                              children: [
+                                OutlinedButton(
+                                  onPressed: _isGoogleLoading ? null : _continueWithGoogle,
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF1B4D3E),
+                                    side: BorderSide(
+                                      color: const Color(0xFF1F8A70).withOpacity(0.2),
+                                      width: 1.5,
                                     ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 0,
                                   ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Password wajib diisi';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 28),
-                              FilledButton(
-                                onPressed: _isSubmitting ? null : _submit,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1F8A70),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 2,
-                                  shadowColor: const Color(0xFF1F8A70).withOpacity(0.2),
-                                ),
-                                child: _isSubmitting
-                                    ? const SizedBox(
-                                        height: 22,
-                                        width: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: Colors.white,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (_isGoogleLoading)
+                                        const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation(Color(0xFF1F8A70)),
+                                          ),
+                                        )
+                                      else
+                                        const Icon(
+                                          Icons.g_mobiledata_rounded,
+                                          size: 32,
+                                          color: Color(0xFF1F8A70),
                                         ),
-                                      )
-                                    : const Text(
-                                        'Masuk Akun',
+                                      const SizedBox(width: 8),
+                                      const Text(
+                                        'Masuk dengan Google',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w700,
-                                          fontSize: 16,
+                                          fontSize: 15,
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(color: const Color(0xFF1F8A70).withOpacity(0.12)),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        'atau dengan email',
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: const Color(0xFF6B8A80),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(color: const Color(0xFF1F8A70).withOpacity(0.12)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        FadeTransition(
+                          opacity: _formFadeAnimation,
+                          child: SlideTransition(
+                            position: _formSlideAnimation,
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextFormField(
+                                    controller: _identifierController,
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                    decoration: const InputDecoration(
+                                      labelText: 'Username atau Email',
+                                      prefixIcon: Icon(Icons.person_outline_rounded, color: Color(0xFF1F8A70)),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return 'Username atau email wajib diisi';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                    decoration: InputDecoration(
+                                      labelText: 'Password',
+                                      prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF1F8A70)),
+                                      suffixIcon: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword = !_obscurePassword;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                          color: const Color(0xFF6B8A80),
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Password wajib diisi';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 28),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Belum memiliki akun? ',
-                              style: TextStyle(
-                                color: Color(0xFF6B8A80),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const RegisterPage(),
+                        FadeTransition(
+                          opacity: _buttonFadeAnimation,
+                          child: SlideTransition(
+                            position: _buttonSlideAnimation,
+                            child: Column(
+                              children: [
+                                FilledButton(
+                                  onPressed: _isSubmitting ? null : _submit,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFF1F8A70),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 2,
+                                    shadowColor: const Color(0xFF1F8A70).withOpacity(0.2),
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Daftar Sekarang',
-                                style: TextStyle(
-                                  color: Color(0xFF1F8A70),
-                                  fontWeight: FontWeight.w700,
-                                  decoration: TextDecoration.underline,
+                                  child: _isSubmitting
+                                      ? const SizedBox(
+                                          height: 22,
+                                          width: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Masuk Akun',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
+                                          ),
+                                        ),
                                 ),
-                              ),
+                                const SizedBox(height: 28),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Belum memiliki akun? ',
+                                      style: TextStyle(
+                                        color: Color(0xFF6B8A80),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => const RegisterPage(),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        'Daftar Sekarang',
+                                        style: TextStyle(
+                                          color: Color(0xFF1F8A70),
+                                          fontWeight: FontWeight.w700,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),

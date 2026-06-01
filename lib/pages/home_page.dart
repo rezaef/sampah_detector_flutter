@@ -111,6 +111,24 @@ class _DashboardPageState extends State<DashboardPage> {
     return 'Rata-rata ${average.toStringAsFixed(1)}%';
   }
 
+  Widget _animateItem({required int index, required Widget child}) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (index * 80)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 16 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _summary == null) {
@@ -129,249 +147,280 @@ class _DashboardPageState extends State<DashboardPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _DashboardHero(
-            summary: summary,
-            userName: AuthService.instance.currentUser?.displayName,
+          _animateItem(
+            index: 0,
+            child: _DashboardHero(
+              summary: summary,
+              userName: AuthService.instance.currentUser?.displayName,
+            ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  title: 'Total Scan',
-                  value: summary.totalScans.toString(),
-                  icon: Icons.qr_code_scanner_outlined,
+          _animateItem(
+            index: 1,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    title: 'Total Scan',
+                    value: summary.totalScans.toString(),
+                    icon: Icons.qr_code_scanner_outlined,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  title: 'Poin',
-                  value: summary.points.toString(),
-                  icon: Icons.stars_outlined,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  title: 'Organik',
-                  value: summary.organicCount.toString(),
-                  icon: Icons.eco_outlined,
-                  subtitle: _organicAverageConfidenceLabel,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  title: 'Anorganik',
-                  value: summary.anorganicCount.toString(),
-                  icon: Icons.recycling_outlined,
-                  subtitle: _anorganicAverageConfidenceLabel,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          const _SectionHeader(
-            title: 'Menu utama',
-            subtitle:
-                'Fitur lengkap untuk deteksi, edukasi, dan pengelolaan sampah.',
-          ),
-          const SizedBox(height: 12),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 0.86,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            children: [
-              _FeatureCard(
-                title: 'Scan Sampah',
-                subtitle: 'Klasifikasi sampah organik/anorganik menggunakan model MobileNetV2.',
-                icon: Icons.camera_alt_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.detect),
-              ),
-              _FeatureCard(
-                title: 'Panduan Pemilahan',
-                subtitle: 'Cara memilah sampah dengan benar beserta contoh per kategori.',
-                icon: Icons.rule_folder_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.sortingGuide),
-              ),
-              _FeatureCard(
-                title: 'Edukasi Lingkungan',
-                subtitle: 'Artikel tentang daur ulang, dampak sampah, dan tips ramah lingkungan.',
-                icon: Icons.menu_book_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.education),
-              ),
-              _FeatureCard(
-                title: 'Tantangan Eco',
-                subtitle: 'Selesaikan misi mingguan untuk mendapatkan poin dan badge.',
-                icon: Icons.flag_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.challenges),
-              ),
-              _FeatureCard(
-                title: 'Laporan Lingkungan',
-                subtitle: 'Laporkan lokasi penumpukan sampah beserta dokumentasi foto.',
-                icon: Icons.report_gmailerrorred_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.report),
-              ),
-              _FeatureCard(
-                title: 'Peta Lokasi Sampah',
-                subtitle: 'Cari TPS, TPA, bank sampah, dan drop point terdekat.',
-                icon: Icons.map_outlined,
-                onTap: () => widget.onOpenFeature(AppFeature.bankSampah),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          const _SectionHeader(
-            title: 'Aktivitas terbaru',
-            subtitle:
-                'Hasil scan dan laporan lingkungan terkini dari akun Anda.',
-          ),
-          const SizedBox(height: 12),
-          if (_latestHistory != null)
-            _ActivityCard(
-              title: 'Klasifikasi terakhir',
-              subtitle: _latestHistory!.result.label,
-              description:
-                  'Kepercayaan ${_latestHistory!.result.confidenceLabel} - ${_latestHistory!.result.recommendation}',
-              icon: Icons.auto_awesome_outlined,
-              footer: _formatDate(_latestHistory!.createdAt),
-            )
-          else
-            const _ActivityCard(
-              title: 'Klasifikasi terakhir',
-              subtitle: 'Belum ada riwayat klasifikasi',
-              description:
-                  'Buka menu Scan Sampah untuk memulai klasifikasi gambar pertama Anda.',
-              icon: Icons.photo_camera_back_outlined,
-              footer: 'Siap digunakan',
-            ),
-          const SizedBox(height: 12),
-          if (_latestReport != null)
-            _ActivityCard(
-              title: 'Laporan lingkungan terbaru',
-              subtitle: _latestReport!.title,
-              description:
-                  '${_latestReport!.locationName} - ${_latestReport!.status}',
-              icon: Icons.location_on_outlined,
-              footer: _formatDate(_latestReport!.createdAt),
-            )
-          else
-            const _ActivityCard(
-              title: 'Laporan lingkungan terbaru',
-              subtitle: 'Belum ada laporan',
-              description:
-                  'Gunakan fitur Laporan Lingkungan untuk mendokumentasikan titik penumpukan sampah di sekitar Anda.',
-              icon: Icons.assignment_outlined,
-              footer: 'Buka melalui menu utama',
-            ),
-          const SizedBox(height: 24),
-          const _SectionHeader(
-            title: 'Tantangan aktif',
-            subtitle:
-                'Progres tantangan dihitung otomatis berdasarkan jumlah scan dan laporan Anda.',
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1F8A70).withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Poin',
+                    value: summary.points.toString(),
+                    icon: Icons.stars_outlined,
+                  ),
                 ),
               ],
-              border: Border.all(
-                color: const Color(0xFF1F8A70).withOpacity(0.06),
-                width: 1,
-              ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F8A70).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.flag_rounded,
-                          color: Color(0xFF1F8A70),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              activeChallenge.title,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF1B4D3E),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              activeChallenge.description,
-                              style: const TextStyle(
-                                color: Color(0xFF507A6D),
-                                fontSize: 13,
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 2,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    title: 'Organik',
+                    value: summary.organicCount.toString(),
+                    icon: Icons.eco_outlined,
+                    subtitle: _organicAverageConfidenceLabel,
                   ),
-                  const SizedBox(height: 20),
-                  LinearProgressIndicator(
-                    value: activeChallenge.completionRatio,
-                    minHeight: 8,
-                    borderRadius: BorderRadius.circular(999),
-                    backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
-                    valueColor: const AlwaysStoppedAnimation(Color(0xFF1F8A70)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Anorganik',
+                    value: summary.anorganicCount.toString(),
+                    icon: Icons.recycling_outlined,
+                    subtitle: _anorganicAverageConfidenceLabel,
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${activeChallenge.progress}/${activeChallenge.target} progres',
-                        style: const TextStyle(
-                          color: Color(0xFF6B8A80),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                      Text(
-                        '+${activeChallenge.rewardPoints} poin',
-                        style: const TextStyle(
-                          color: Color(0xFFFFA447),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _animateItem(
+            index: 3,
+            child: const _SectionHeader(
+              title: 'Menu utama',
+              subtitle: 'Fitur lengkap untuk deteksi, edukasi, dan pengelolaan sampah.',
+            ),
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 4,
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              childAspectRatio: 0.86,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              children: [
+                _FeatureCard(
+                  title: 'Scan Sampah',
+                  subtitle: 'Klasifikasi sampah organik/anorganik menggunakan model MobileNetV2.',
+                  icon: Icons.camera_alt_outlined,
+                  onTap: () => widget.onOpenFeature(AppFeature.detect),
+                ),
+                _FeatureCard(
+                  title: 'Panduan Pemilahan',
+                  subtitle: 'Cara memilah sampah dengan benar beserta contoh per kategori.',
+                  icon: Icons.rule_folder_outlined,
+                  onTap: () => widget.onOpenFeature(AppFeature.sortingGuide),
+                ),
+                _FeatureCard(
+                  title: 'Edukasi Lingkungan',
+                  subtitle: 'Artikel tentang daur ulang, dampak sampah, dan tips ramah lingkungan.',
+                  icon: Icons.menu_book_outlined,
+                  onTap: () => widget.onOpenFeature(AppFeature.education),
+                ),
+                _FeatureCard(
+                  title: 'Tantangan Eco',
+                  subtitle: 'Selesaikan misi mingguan untuk mendapatkan poin dan badge.',
+                  icon: Icons.flag_outlined,
+                  onTap: () => widget.onOpenFeature(AppFeature.challenges),
+                ),
+                _FeatureCard(
+                  title: 'Laporan Lingkungan',
+                  subtitle: 'Laporkan lokasi penumpukan sampah beserta dokumentasi foto.',
+                  icon: Icons.report_gmailerrorred_outlined,
+                  onTap: () => widget.onOpenFeature(AppFeature.report),
+                ),
+                _FeatureCard(
+                  title: 'Peta Lokasi Sampah',
+                  subtitle: 'Cari TPS, TPA, bank sampah, dan drop point terdekat.',
+                  icon: Icons.map_outlined,
+                  onTap: () => widget.onOpenFeature(AppFeature.bankSampah),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _animateItem(
+            index: 5,
+            child: const _SectionHeader(
+              title: 'Aktivitas terbaru',
+              subtitle: 'Hasil scan dan laporan lingkungan terkini dari akun Anda.',
+            ),
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 6,
+            child: _latestHistory != null
+                ? _ActivityCard(
+                    title: 'Klasifikasi terakhir',
+                    subtitle: _latestHistory!.result.label,
+                    description:
+                        'Kepercayaan ${_latestHistory!.result.confidenceLabel} - ${_latestHistory!.result.recommendation}',
+                    icon: Icons.auto_awesome_outlined,
+                    footer: _formatDate(_latestHistory!.createdAt),
+                  )
+                : const _ActivityCard(
+                    title: 'Klasifikasi terakhir',
+                    subtitle: 'Belum ada riwayat klasifikasi',
+                    description:
+                        'Buka menu Scan Sampah untuk memulai klasifikasi gambar pertama Anda.',
+                    icon: Icons.photo_camera_back_outlined,
+                    footer: 'Siap digunakan',
+                  ),
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 7,
+            child: _latestReport != null
+                ? _ActivityCard(
+                    title: 'Laporan lingkungan terbaru',
+                    subtitle: _latestReport!.title,
+                    description: '${_latestReport!.locationName} - ${_latestReport!.status}',
+                    icon: Icons.location_on_outlined,
+                    footer: _formatDate(_latestReport!.createdAt),
+                  )
+                : const _ActivityCard(
+                    title: 'Laporan lingkungan terbaru',
+                    subtitle: 'Belum ada laporan',
+                    description:
+                        'Gunakan fitur Laporan Lingkungan untuk mendokumentasikan titik penumpukan sampah di sekitar Anda.',
+                    icon: Icons.assignment_outlined,
+                    footer: 'Buka melalui menu utama',
+                  ),
+          ),
+          const SizedBox(height: 24),
+          _animateItem(
+            index: 8,
+            child: const _SectionHeader(
+              title: 'Tantangan aktif',
+              subtitle: 'Progres tantangan dihitung otomatis berdasarkan jumlah scan dan laporan Anda.',
+            ),
+          ),
+          const SizedBox(height: 12),
+          _animateItem(
+            index: 9,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1F8A70).withOpacity(0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
+                border: Border.all(
+                  color: const Color(0xFF1F8A70).withOpacity(0.06),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F8A70).withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.flag_rounded,
+                            color: Color(0xFF1F8A70),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activeChallenge.title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF1B4D3E),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                activeChallenge.description,
+                                style: const TextStyle(
+                                  color: Color(0xFF507A6D),
+                                  fontSize: 13,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0.0, end: activeChallenge.completionRatio),
+                      duration: const Duration(milliseconds: 900),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, val, child) {
+                        return LinearProgressIndicator(
+                          value: val,
+                          minHeight: 8,
+                          borderRadius: BorderRadius.circular(999),
+                          backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
+                          valueColor: const AlwaysStoppedAnimation(Color(0xFF1F8A70)),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${activeChallenge.progress}/${activeChallenge.target} progres',
+                          style: const TextStyle(
+                            color: Color(0xFF6B8A80),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        Text(
+                          '+${activeChallenge.rewardPoints} poin',
+                          style: const TextStyle(
+                            color: Color(0xFFFFA447),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

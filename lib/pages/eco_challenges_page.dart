@@ -15,13 +15,18 @@ class EcoChallengesPage extends StatefulWidget {
   State<EcoChallengesPage> createState() => _EcoChallengesPageState();
 }
 
-class _EcoChallengesPageState extends State<EcoChallengesPage> {
+class _EcoChallengesPageState extends State<EcoChallengesPage> with SingleTickerProviderStateMixin {
   bool _isLoading = true;
   AppGamificationSummary? _summary;
+  late final AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
     _loadSummary();
   }
 
@@ -31,6 +36,12 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
     if (oldWidget.refreshToken != widget.refreshToken) {
       _loadSummary();
     }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSummary() async {
@@ -45,6 +56,7 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
       _summary = summary;
       _isLoading = false;
     });
+    _animationController.forward(from: 0.0);
   }
 
   @override
@@ -61,6 +73,31 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
         .where((item) => item.isCompleted)
         .fold<int>(0, (total, item) => total + item.rewardPoints);
 
+    // Staggered animations for headers
+    final headerFade = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    );
+    final headerSlide = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    ));
+
+    final titleFade = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.15, 0.65, curve: Curves.easeOutCubic),
+    );
+    final titleSlide = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.15, 0.65, curve: Curves.easeOutCubic),
+    ));
+
     return Scaffold(
       appBar: AppBar(title: const Text('Tantangan Aktif')),
       body: RefreshIndicator(
@@ -69,89 +106,133 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1F8A70).withOpacity(0.18),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
+            FadeTransition(
+              opacity: headerFade,
+              child: SlideTransition(
+                position: headerSlide,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1F8A70).withOpacity(0.18),
+                        blurRadius: 24,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
                   ),
-                ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Target mingguan Anda',
+                          style: TextStyle(color: Colors.white.withOpacity(0.82), fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '$completed / ${summary.challenges.length} Misi Selesai',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 22,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _ChallengeChip(
+                              icon: Icons.stars_rounded,
+                              label: '+$totalRewardPoints Poin',
+                            ),
+                            _ChallengeChip(
+                              icon: Icons.today_outlined,
+                              label: '${summary.uniqueScanDays} Hari Aktif',
+                            ),
+                            _ChallengeChip(
+                              icon: Icons.qr_code_scanner_outlined,
+                              label: '${summary.totalScans} Scan',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            ),
+            const SizedBox(height: 24),
+            FadeTransition(
+              opacity: titleFade,
+              child: SlideTransition(
+                position: titleSlide,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Target mingguan Anda',
-                      style: TextStyle(color: Colors.white.withOpacity(0.82), fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '$completed / ${summary.challenges.length} Misi Selesai',
-                      style: const TextStyle(
-                        color: Colors.white,
+                    const Text(
+                      'Daftar Tantangan',
+                      style: TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
-                        fontSize: 22,
-                        letterSpacing: -0.5,
+                        color: Color(0xFF1B4D3E),
+                        letterSpacing: -0.3,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _ChallengeChip(
-                          icon: Icons.stars_rounded,
-                          label: '+$totalRewardPoints Poin',
-                        ),
-                        _ChallengeChip(
-                          icon: Icons.today_outlined,
-                          label: '${summary.uniqueScanDays} Hari Aktif',
-                        ),
-                        _ChallengeChip(
-                          icon: Icons.qr_code_scanner_outlined,
-                          label: '${summary.totalScans} Scan',
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Semua progres dihitung otomatis dari aktivitas scan, laporan, dan konsistensi penggunaan.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6B8A80),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Daftar Tantangan',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF1B4D3E),
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 2),
-            const Text(
-              'Semua progres dihitung otomatis dari aktivitas scan, laporan, dan konsistensi penggunaan.',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF6B8A80),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
             const SizedBox(height: 16),
-            ...summary.challenges.map(
-              (challenge) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _ChallengeCard(challenge: challenge),
-              ),
+            ...summary.challenges.asMap().entries.map(
+              (entry) {
+                final index = entry.key;
+                final challenge = entry.value;
+                
+                final double start = (0.2 + (index * 0.08)).clamp(0.0, 0.5);
+                final double end = (start + 0.5).clamp(0.0, 1.0);
+                
+                final itemFade = CurvedAnimation(
+                  parent: _animationController,
+                  curve: Interval(start, end, curve: Curves.easeOutCubic),
+                );
+                
+                final itemSlide = Tween<Offset>(
+                  begin: const Offset(0.0, 0.08),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: _animationController,
+                  curve: Interval(start, end, curve: Curves.easeOutCubic),
+                ));
+
+                return FadeTransition(
+                  opacity: itemFade,
+                  child: SlideTransition(
+                    position: itemSlide,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _ChallengeCard(challenge: challenge),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -298,13 +379,19 @@ class _ChallengeCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: challenge.completionRatio,
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(999),
-              color: accent,
-              backgroundColor: accent.withOpacity(0.08),
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: challenge.completionRatio),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return LinearProgressIndicator(
+                  value: value,
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(999),
+                  color: accent,
+                  backgroundColor: accent.withOpacity(0.08),
+                );
+              },
             ),
             const SizedBox(height: 10),
             Row(

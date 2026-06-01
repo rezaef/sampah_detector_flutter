@@ -10,47 +10,79 @@ class SortingGuidePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: const [
-          _GuideHero(),
+          _AnimatedEntry(index: 0, child: _GuideHero()),
           SizedBox(height: 16),
-          _GuideCategoryCard(
-            title: 'Sampah Organik',
-            subtitle: 'Sisa makanan, daun kering, kulit buah, dan bahan mudah terurai.',
-            icon: Icons.eco_outlined,
-            color: Color(0xFF2E8B57),
-            examples: [
-              'Sisa makanan dan sayur',
-              'Kulit buah dan ampas kopi',
-              'Daun, rumput, dan ranting kecil',
-            ],
-            steps: [
-              'Pisahkan dari plastik, kaca, dan logam.',
-              'Simpan pada wadah tertutup untuk menjaga kebersihan area.',
-              'Arahkan ke komposter atau tong organik.',
-            ],
+          _AnimatedEntry(
+            index: 1,
+            child: _GuideCategoryCard(
+              title: 'Sampah Organik',
+              subtitle: 'Sisa makanan, daun kering, kulit buah, dan bahan mudah terurai.',
+              icon: Icons.eco_outlined,
+              color: Color(0xFF2E8B57),
+              examples: [
+                'Sisa makanan dan sayur',
+                'Kulit buah dan ampas kopi',
+                'Daun, rumput, dan ranting kecil',
+              ],
+              steps: [
+                'Pisahkan dari plastik, kaca, dan logam.',
+                'Simpan pada wadah tertutup untuk menjaga kebersihan area.',
+                'Arahkan ke komposter atau tong organik.',
+              ],
+            ),
           ),
           SizedBox(height: 12),
-          _GuideCategoryCard(
-            title: 'Sampah Anorganik',
-            subtitle: 'Plastik, kertas, kaleng, kaca, dan material yang dapat didaur ulang.',
-            icon: Icons.recycling_outlined,
-            color: Color(0xFF2F6FED),
-            examples: [
-              'Botol plastik, gelas kemasan, dan kantong plastik',
-              'Kertas, kardus, dan karton bersih',
-              'Kaleng minuman, botol kaca, dan logam ringan',
-            ],
-            steps: [
-              'Bilas dan keringkan sebelum disimpan.',
-              'Lipat atau pipihkan kemasan agar hemat ruang.',
-              'Setorkan ke bank sampah atau wadah daur ulang.',
-            ],
+          _AnimatedEntry(
+            index: 2,
+            child: _GuideCategoryCard(
+              title: 'Sampah Anorganik',
+              subtitle: 'Plastik, kertas, kaleng, kaca, dan material yang dapat didaur ulang.',
+              icon: Icons.recycling_outlined,
+              color: Color(0xFF2F6FED),
+              examples: [
+                'Botol plastik, gelas kemasan, dan kantong plastik',
+                'Kertas, kardus, dan karton bersih',
+                'Kaleng minuman, botol kaca, dan logam ringan',
+              ],
+              steps: [
+                'Bilas dan keringkan sebelum disimpan.',
+                'Lipat atau pipihkan kemasan agar hemat ruang.',
+                'Setorkan ke bank sampah atau wadah daur ulang.',
+              ],
+            ),
           ),
           SizedBox(height: 12),
-          _QuickGuideCard(),
+          _AnimatedEntry(index: 3, child: _QuickGuideCard()),
           SizedBox(height: 12),
-          _MistakeCard(),
+          _AnimatedEntry(index: 4, child: _MistakeCard()),
         ],
       ),
+    );
+  }
+}
+
+class _AnimatedEntry extends StatelessWidget {
+  final int index;
+  final Widget child;
+
+  const _AnimatedEntry({required this.index, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (index * 80)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 16 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
+        );
+      },
+      child: child,
     );
   }
 }

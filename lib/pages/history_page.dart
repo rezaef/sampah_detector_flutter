@@ -281,73 +281,108 @@ class _HistoryPageState extends State<HistoryPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           if (index == 0) {
-            return _HistoryHeaderCard(
-              isSelectionMode: _isSelectionMode,
-              totalItems: _history.length,
-              onClearAll: _clearAll,
+            return TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return Transform.translate(
+                  offset: Offset(0, 16 * (1 - value)),
+                  child: Opacity(opacity: value, child: child),
+                );
+              },
+              child: _HistoryHeaderCard(
+                isSelectionMode: _isSelectionMode,
+                totalItems: _history.length,
+                onClearAll: _clearAll,
+              ),
             );
           }
 
           if (_isSelectionMode && index == 1) {
             final allSelected = _selectedIds.length == _history.length;
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_selectedIds.length} item dipilih',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _selectAll,
-                            icon: Icon(
-                              allSelected
-                                  ? Icons.remove_done_outlined
-                                  : Icons.select_all_outlined,
+            return TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return Transform.translate(
+                  offset: Offset(0, 16 * (1 - value)),
+                  child: Opacity(opacity: value, child: child),
+                );
+              },
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_selectedIds.length} item dipilih',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
                             ),
-                            label: Text(
-                              allSelected ? 'Batal pilih semua' : 'Pilih semua',
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _selectAll,
+                              icon: Icon(
+                                allSelected
+                                    ? Icons.remove_done_outlined
+                                    : Icons.select_all_outlined,
+                              ),
+                              label: Text(
+                                allSelected ? 'Batal pilih semua' : 'Pilih semua',
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: _deleteSelected,
-                            icon: const Icon(Icons.delete_outline),
-                            label: const Text('Hapus'),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: _deleteSelected,
+                              icon: const Icon(Icons.delete_outline),
+                              label: const Text('Hapus'),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           }
 
-          final item = _history[index - (_isSelectionMode ? 2 : 1)];
+          final cardIndex = index - (_isSelectionMode ? 2 : 1);
+          final item = _history[cardIndex];
           final selected = _selectedIds.contains(item.id);
 
-          return _HistoryCard(
-            item: item,
-            isSelected: selected,
-            formattedDateTime: _formatDateTime(item.createdAt),
-            onTap: () {
-              if (_isSelectionMode) {
-                _toggleSelection(item);
-              }
+          return TweenAnimationBuilder<double>(
+            key: ValueKey('history_${item.id}'),
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: Duration(milliseconds: 400 + (cardIndex * 80)),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 16 * (1 - value)),
+                child: Opacity(opacity: value, child: child),
+              );
             },
-            onLongPress: () => _toggleSelection(item, forceEnable: true),
-            onDelete: () => _deleteSingle(item),
+            child: _HistoryCard(
+              item: item,
+              isSelected: selected,
+              formattedDateTime: _formatDateTime(item.createdAt),
+              onTap: () {
+                if (_isSelectionMode) {
+                  _toggleSelection(item);
+                }
+              },
+              onLongPress: () => _toggleSelection(item, forceEnable: true),
+              onDelete: () => _deleteSingle(item),
+            ),
           );
         },
       ),

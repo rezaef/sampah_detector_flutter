@@ -9,8 +9,54 @@ class AccountPage extends StatefulWidget {
   State<AccountPage> createState() => _AccountPageState();
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _AccountPageState extends State<AccountPage> with SingleTickerProviderStateMixin {
   bool _isSubmitting = false;
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+  late final Animation<double> _menuFadeAnimation;
+  late final Animation<Offset> _menuSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+    ));
+
+    _menuFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.15, 0.95, curve: Curves.easeOutCubic),
+    );
+    _menuSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.15, 0.95, curve: Curves.easeOutCubic),
+    ));
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   Future<void> _changeEmail() async {
     final user = AuthService.instance.currentUser;
@@ -256,7 +302,6 @@ class _AccountPageState extends State<AccountPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  @override
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
@@ -309,7 +354,6 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
-    final theme = Theme.of(context);
 
     if (user == null) {
       return Scaffold(
@@ -323,118 +367,130 @@ class _AccountPageState extends State<AccountPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1F8A70).withOpacity(0.18),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.35), width: 3),
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1F8A70).withOpacity(0.18),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
-                    child: CircleAvatar(
-                      radius: 38,
-                      backgroundColor: Colors.white.withOpacity(0.15),
-                      child: Text(
-                        user.initials,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.35), width: 3),
+                        ),
+                        child: CircleAvatar(
+                          radius: 38,
+                          backgroundColor: Colors.white.withOpacity(0.15),
+                          child: Text(
+                            user.initials,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Text(
+                        user.displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '@${user.username}',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        user.email,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.72),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    user.displayName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '@${user.username}',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user.email,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.72),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
           const SizedBox(height: 18),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1F8A70).withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+          FadeTransition(
+            opacity: _menuFadeAnimation,
+            child: SlideTransition(
+              position: _menuSlideAnimation,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1F8A70).withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: const Color(0xFF1F8A70).withOpacity(0.06),
+                    width: 1,
+                  ),
                 ),
-              ],
-              border: Border.all(
-                color: const Color(0xFF1F8A70).withOpacity(0.06),
-                width: 1,
+                child: Column(
+                  children: [
+                    _buildMenuItem(
+                      icon: Icons.email_outlined,
+                      title: 'Ubah Email',
+                      subtitle: user.email,
+                      onTap: _isSubmitting ? null : _changeEmail,
+                    ),
+                    const Divider(height: 1, indent: 78, endIndent: 16),
+                    _buildMenuItem(
+                      icon: Icons.lock_reset_outlined,
+                      title: 'Ubah Kata Sandi',
+                      subtitle: 'Perbarui kata sandi akses akun Anda',
+                      onTap: _isSubmitting ? null : _changePassword,
+                    ),
+                    const Divider(height: 1, indent: 78, endIndent: 16),
+                    _buildMenuItem(
+                      icon: Icons.logout_rounded,
+                      title: 'Logout',
+                      subtitle: 'Keluar dari sesi masuk aplikasi',
+                      isDestructive: true,
+                      onTap: _isSubmitting ? null : _logout,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  icon: Icons.email_outlined,
-                  title: 'Ubah Email',
-                  subtitle: user.email,
-                  onTap: _isSubmitting ? null : _changeEmail,
-                ),
-                const Divider(height: 1, indent: 78, endIndent: 16),
-                _buildMenuItem(
-                  icon: Icons.lock_reset_outlined,
-                  title: 'Ubah Kata Sandi',
-                  subtitle: 'Perbarui kata sandi akses akun Anda',
-                  onTap: _isSubmitting ? null : _changePassword,
-                ),
-                const Divider(height: 1, indent: 78, endIndent: 16),
-                _buildMenuItem(
-                  icon: Icons.logout_rounded,
-                  title: 'Logout',
-                  subtitle: 'Keluar dari sesi masuk aplikasi',
-                  isDestructive: true,
-                  onTap: _isSubmitting ? null : _logout,
-                ),
-              ],
             ),
           ),
         ],

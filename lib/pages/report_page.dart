@@ -19,14 +19,55 @@ class ReportPage extends StatefulWidget {
   State<ReportPage> createState() => _ReportPageState();
 }
 
-class _ReportPageState extends State<ReportPage> {
+class _ReportPageState extends State<ReportPage> with SingleTickerProviderStateMixin {
   bool _isLoading = true;
   List<EnvironmentalReport> _reports = <EnvironmentalReport>[];
+  late final AnimationController _animationController;
+  late final Animation<double> _headerFadeAnimation;
+  late final Animation<Offset> _headerSlideAnimation;
+  late final Animation<double> _statsFadeAnimation;
+  late final Animation<Offset> _statsSlideAnimation;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _headerFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+    );
+    _headerSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+    ));
+
+    _statsFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.18, 0.78, curve: Curves.easeOutCubic),
+    );
+    _statsSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.18, 0.78, curve: Curves.easeOutCubic),
+    ));
+
+    _animationController.forward();
     _loadReports();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadReports() async {
@@ -129,137 +170,177 @@ class _ReportPageState extends State<ReportPage> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF1F8A70).withOpacity(0.18),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
+                  FadeTransition(
+                    opacity: _headerFadeAnimation,
+                    child: SlideTransition(
+                      position: _headerSlideAnimation,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1F8A70).withOpacity(0.18),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Laporkan Titik Sampah Liar.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
-                              letterSpacing: -0.5,
-                            ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Laporkan Titik Sampah Liar.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Lengkapi foto, kategori, dan lokasi untuk membantu pembersihan lingkungan terkoordinasi.',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 13,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Lengkapi foto, kategori, dan lokasi untuk membantu pembersihan lingkungan terkoordinasi.',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 13,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _ReportStatCard(
-                          title: 'Total Laporan',
-                          value: _reports.length.toString(),
-                          icon: Icons.assignment_outlined,
-                        ),
+                  FadeTransition(
+                    opacity: _statsFadeAnimation,
+                    child: SlideTransition(
+                      position: _statsSlideAnimation,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _ReportStatCard(
+                              title: 'Total Laporan',
+                              value: _reports.length.toString(),
+                              icon: Icons.assignment_outlined,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _ReportStatCard(
+                              title: 'Status Aktif',
+                              value: _reports.isEmpty ? '0' : _reports.length.toString(),
+                              icon: Icons.notifications_active_outlined,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _ReportStatCard(
-                          title: 'Status Aktif',
-                          value: _reports.isEmpty ? '0' : _reports.length.toString(),
-                          icon: Icons.notifications_active_outlined,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                   if (_reports.isEmpty)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1F8A70).withOpacity(0.04),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: const Color(0xFF1F8A70).withOpacity(0.06),
-                          width: 1,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 72,
-                              height: 72,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1F8A70).withOpacity(0.08),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.assignment_outlined,
-                                size: 34,
-                                color: Color(0xFF1F8A70),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Belum ada laporan lingkungan.',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF1B4D3E),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Tekan tombol Buat laporan untuk menambahkan lokasi penumpukan sampah lengkap dengan foto dan detailnya.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFF6B8A80),
-                                fontSize: 13,
-                                height: 1.35,
-                              ),
+                    TweenAnimationBuilder<double>(
+                      key: const ValueKey('empty_reports_anim'),
+                      tween: Tween<double>(begin: 0.0, end: 1.0),
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 16 * (1 - value)),
+                          child: Opacity(opacity: value, child: child),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1F8A70).withOpacity(0.04),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
                             ),
                           ],
+                          border: Border.all(
+                            color: const Color(0xFF1F8A70).withOpacity(0.06),
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 72,
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1F8A70).withOpacity(0.08),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.assignment_outlined,
+                                  size: 34,
+                                  color: Color(0xFF1F8A70),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Belum ada laporan lingkungan.',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF1B4D3E),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Tekan tombol Buat laporan untuk menambahkan lokasi penumpukan sampah lengkap dengan foto dan detailnya.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Color(0xFF6B8A80),
+                                  fontSize: 13,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     )
                   else
-                    ..._reports.map(
-                      (report) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _ReportCard(
-                          report: report,
-                          formattedDate: _formatDateTime(report.createdAt),
-                          onDelete: () => _deleteReport(report),
-                        ),
-                      ),
+                    ..._reports.asMap().entries.map(
+                      (entry) {
+                        final index = entry.key;
+                        final report = entry.value;
+                        return TweenAnimationBuilder<double>(
+                          key: ValueKey('report_${report.id}'),
+                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                          duration: Duration(milliseconds: 400 + (index * 80)),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, child) {
+                            return Transform.translate(
+                              offset: Offset(0, 16 * (1 - value)),
+                              child: Opacity(opacity: value, child: child),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _ReportCard(
+                              report: report,
+                              formattedDate: _formatDateTime(report.createdAt),
+                              onDelete: () => _deleteReport(report),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                 ],
               ),
@@ -560,7 +641,7 @@ class _CreateReportPage extends StatefulWidget {
   State<_CreateReportPage> createState() => _CreateReportPageState();
 }
 
-class _CreateReportPageState extends State<_CreateReportPage> {
+class _CreateReportPageState extends State<_CreateReportPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -592,8 +673,64 @@ class _CreateReportPageState extends State<_CreateReportPage> {
   File? _selectedImage;
   bool _isSubmitting = false;
 
+  late final AnimationController _animationController;
+  late final Animation<double> _imageFadeAnimation;
+  late final Animation<Offset> _imageSlideAnimation;
+  late final Animation<double> _formFadeAnimation;
+  late final Animation<Offset> _formSlideAnimation;
+  late final Animation<double> _buttonFadeAnimation;
+  late final Animation<Offset> _buttonSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _imageFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+    );
+    _imageSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+    ));
+
+    _formFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.18, 0.78, curve: Curves.easeOutCubic),
+    );
+    _formSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.18, 0.78, curve: Curves.easeOutCubic),
+    ));
+
+    _buttonFadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.36, 0.96, curve: Curves.easeOutCubic),
+    );
+    _buttonSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.36, 0.96, curve: Curves.easeOutCubic),
+    ));
+
+    _animationController.forward();
+  }
+
   @override
   void dispose() {
+    _animationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -672,8 +809,6 @@ class _CreateReportPageState extends State<_CreateReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Buat Laporan')),
       body: Form(
@@ -681,261 +816,279 @@ class _CreateReportPageState extends State<_CreateReportPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1F8A70).withOpacity(0.04),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-                border: Border.all(
-                  color: const Color(0xFF1F8A70).withOpacity(0.06),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Lampirkan Foto Kondisi Lapangan',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1B4D3E),
+            FadeTransition(
+              opacity: _imageFadeAnimation,
+              child: SlideTransition(
+                position: _imageSlideAnimation,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1F8A70).withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
                       ),
+                    ],
+                    border: Border.all(
+                      color: const Color(0xFF1F8A70).withOpacity(0.06),
+                      width: 1,
                     ),
-                    const SizedBox(height: 12),
-                    if (_selectedImage != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                        ),
-                      )
-                    else
-                      Container(
-                        height: 180,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEBF3F0),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: Icon(Icons.add_a_photo_outlined, size: 42, color: Color(0xFF6B8A80)),
-                        ),
-                      ),
-                    const SizedBox(height: 12),
-                    Row(
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => _pickImage(ImageSource.camera),
-                            icon: const Icon(Icons.camera_alt_outlined),
-                            label: const Text('Kamera'),
+                        const Text(
+                          'Lampirkan Foto Kondisi Lapangan',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1B4D3E),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _pickImage(ImageSource.gallery),
-                            icon: const Icon(Icons.photo_library_outlined),
-                            label: const Text('Galeri'),
+                        const SizedBox(height: 12),
+                        if (_selectedImage != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                            ),
+                          )
+                        else
+                          Container(
+                            height: 180,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEBF3F0),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.add_a_photo_outlined, size: 42, color: Color(0xFF6B8A80)),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1F8A70).withOpacity(0.04),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-                border: Border.all(
-                  color: const Color(0xFF1F8A70).withOpacity(0.06),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: _titleController,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                      decoration: const InputDecoration(
-                        labelText: 'Judul Laporan',
-                        hintText: 'Contoh: Penumpukan sampah di sudut jalan',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Judul laporan wajib diisi.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Lokasi Laporan',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1B4D3E),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    RegionDropdownPicker(
-                      compact: true,
-                      initialHelperText:
-                          'Pilih bertahap dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
-                      onChanged: (selection) {
-                        setState(() {
-                          _selectedLocation = selection.areaText;
-                        });
-                      },
-                    ),
-                    if (_selectedLocation.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F8A70).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 12),
+                        Row(
                           children: [
-                            const Icon(Icons.place_outlined, size: 18, color: Color(0xFF1F8A70)),
-                            const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                _selectedLocation,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1B4D3E),
-                                  fontSize: 13.5,
-                                ),
+                              child: ElevatedButton.icon(
+                                onPressed: () => _pickImage(ImageSource.camera),
+                                icon: const Icon(Icons.camera_alt_outlined),
+                                label: const Text('Kamera'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _pickImage(ImageSource.gallery),
+                                icon: const Icon(Icons.photo_library_outlined),
+                                label: const Text('Galeri'),
                               ),
                             ),
                           ],
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            FadeTransition(
+              opacity: _formFadeAnimation,
+              child: SlideTransition(
+                position: _formSlideAnimation,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1F8A70).withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
                       ),
                     ],
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _selectedCategory,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1B4D3E)),
-                      decoration: const InputDecoration(
-                        labelText: 'Kategori Laporan',
-                      ),
-                      items: _categories
-                          .map(
-                            (item) => DropdownMenuItem(
-                              value: item,
-                              child: Text(item),
+                    border: Border.all(
+                      color: const Color(0xFF1F8A70).withOpacity(0.06),
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: _titleController,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          decoration: const InputDecoration(
+                            labelText: 'Judul Laporan',
+                            hintText: 'Contoh: Penumpukan sampah di sudut jalan',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Judul laporan wajib diisi.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Lokasi Laporan',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1B4D3E),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        RegionDropdownPicker(
+                          compact: true,
+                          initialHelperText:
+                              'Pilih bertahap dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
+                          onChanged: (selection) {
+                            setState(() {
+                              _selectedLocation = selection.areaText;
+                            });
+                          },
+                        ),
+                        if (_selectedLocation.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
                             ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedCategory = value;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _selectedUrgency,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1B4D3E)),
-                      decoration: const InputDecoration(
-                        labelText: 'Tingkat Urgensi',
-                      ),
-                      items: _urgencies
-                          .map(
-                            (item) => DropdownMenuItem(
-                              value: item,
-                              child: Text(item),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1F8A70).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedUrgency = value;
-                          });
-                        }
-                      },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.place_outlined, size: 18, color: Color(0xFF1F8A70)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _selectedLocation,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1B4D3E),
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: _selectedCategory,
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1B4D3E)),
+                          decoration: const InputDecoration(
+                            labelText: 'Kategori Laporan',
+                          ),
+                          items: _categories
+                              .map(
+                                (item) => DropdownMenuItem(
+                                  value: item,
+                                  child: Text(item),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedCategory = value;
+                              });
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: _selectedUrgency,
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1B4D3E)),
+                          decoration: const InputDecoration(
+                            labelText: 'Tingkat Urgensi',
+                          ),
+                          items: _urgencies
+                              .map(
+                                (item) => DropdownMenuItem(
+                                  value: item,
+                                  child: Text(item),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedUrgency = value;
+                              });
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _descriptionController,
+                          minLines: 4,
+                          maxLines: 6,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          decoration: const InputDecoration(
+                            labelText: 'Keterangan Laporan',
+                            hintText:
+                                'Jelaskan kondisi lokasi, jumlah sampah, atau hambatan di lapangan.',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Keterangan laporan wajib diisi.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _descriptionController,
-                      minLines: 4,
-                      maxLines: 6,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                      decoration: const InputDecoration(
-                        labelText: 'Keterangan Laporan',
-                        hintText:
-                            'Jelaskan kondisi lokasi, jumlah sampah, atau hambatan di lapangan.',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Keterangan laporan wajib diisi.';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: _isSubmitting ? null : _saveReport,
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF1F8A70),
-                elevation: 2,
-                shadowColor: const Color(0xFF1F8A70).withOpacity(0.2),
-                minimumSize: const Size.fromHeight(54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            FadeTransition(
+              opacity: _buttonFadeAnimation,
+              child: SlideTransition(
+                position: _buttonSlideAnimation,
+                child: FilledButton.icon(
+                  onPressed: _isSubmitting ? null : _saveReport,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF1F8A70),
+                    elevation: 2,
+                    shadowColor: const Color(0xFF1F8A70).withOpacity(0.2),
+                    minimumSize: const Size.fromHeight(54),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  icon: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.send_outlined),
+                  label: Text(
+                    _isSubmitting ? 'Menyimpan laporan...' : 'Kirim Laporan',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
-              ),
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.send_outlined),
-              label: Text(
-                _isSubmitting ? 'Menyimpan laporan...' : 'Kirim Laporan',
-                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ],
