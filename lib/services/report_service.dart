@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../models/environmental_report.dart';
 import 'api_client.dart';
 
@@ -26,18 +28,28 @@ class ReportService {
     }
   }
 
-  Future<void> addReport(EnvironmentalReport report) async {
-    await ApiClient.instance.post(
+  /// Sends a new report to the backend.
+  ///
+  /// [report] contains the report metadata.
+  /// [imageFile] is the optional photo File to upload as multipart.
+  Future<void> addReport(
+    EnvironmentalReport report, {
+    File? imageFile,
+  }) async {
+    final fields = <String, String>{
+      'title': report.title,
+      'description': report.description,
+      'category': report.category,
+      'location_name': report.locationName,
+      'urgency': report.urgency,
+      'reported_at': report.createdAt.toIso8601String(),
+    };
+
+    await ApiClient.instance.postMultipart(
       '/mobile/reports',
-      body: {
-        'title': report.title,
-        'description': report.description,
-        'category': report.category,
-        'location_name': report.locationName,
-        'urgency': report.urgency,
-        'image_path': report.imagePath,
-        'reported_at': report.createdAt.toIso8601String(),
-      },
+      fields: fields,
+      file: imageFile,
+      fileFieldName: 'image',
     );
   }
 

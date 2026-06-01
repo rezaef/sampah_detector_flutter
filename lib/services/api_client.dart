@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,6 +51,80 @@ class ApiClient {
     bool requiresAuth = true,
   }) {
     return _send('DELETE', path, body: body, requiresAuth: requiresAuth);
+  }
+
+  /// Sends a multipart/form-data POST request, optionally with a file.
+  ///
+  /// [fields] are regular string form fields.
+  /// [file] is the optional File to attach (e.g. a photo).
+  /// [fileFieldName] is the form field name for the file (default: 'image').
+  Future<dynamic> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    File? file,
+    String fileFieldName = 'image',
+    bool requiresAuth = true,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(_tokenKey);
+
+    if (requiresAuth && (token == null || token.isEmpty)) {
+      throw const ApiException('Sesi login tidak tersedia.', statusCode: 401);
+    }
+
+    final uri = Uri.parse(
+      '${ApiConfig.baseUrl}${path.startsWith('/') ? path : '/$path'}',
+    );
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll({
+      'Accept': 'application/json',
+      if (requiresAuth && token != null && token.isNotEmpty)
+        'Authorization': 'Bearer $token',
+    });
+
+    request.fields.addAll(fields);
+
+    if (file != null) {
+      final extension = file.path.contains('.')
+          ? file.path.split('.').last.toLowerCase()
+          : 'jpg';
+      final contentType = switch (extension) {
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+        _ => 'image/jpeg',
+      };
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          fileFieldName,
+          file.path,
+          // ignore: deprecated_member_use
+          contentType: http.MediaType.parse(contentType),
+        ),
+      );
+    }
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+
+    dynamic decoded;
+    if (response.body.isNotEmpty) {
+      try {
+        decoded = jsonDecode(response.body);
+      } catch (_) {
+        decoded = response.body;
+      }
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return decoded;
+    }
+
+    throw ApiException(
+      _extractMessage(decoded, fallback: 'Permintaan ke server gagal.'),
+      statusCode: response.statusCode,
+    );
   }
 
   Future<dynamic> _send(

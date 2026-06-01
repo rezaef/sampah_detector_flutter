@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/environmental_report.dart';
 import '../services/report_service.dart';
-import '../services/storage_service.dart';
 import '../widgets/region_dropdown_picker.dart';
 
 class ReportPage extends StatefulWidget {
@@ -320,17 +319,31 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final file = report.imagePath == null ? null : File(report.imagePath!);
+    // Prefer server URL, fall back to local file path
+    final hasServerImage = report.imageUrl != null && report.imageUrl!.isNotEmpty;
+    final hasLocalImage = report.imagePath != null &&
+        report.imagePath!.isNotEmpty &&
+        !report.imagePath!.startsWith('http') &&
+        File(report.imagePath!).existsSync();
 
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (file != null && file.existsSync())
+          if (hasServerImage)
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: Image.file(file, fit: BoxFit.cover),
+              child: Image.network(
+                report.imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            )
+          else if (hasLocalImage)
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.file(File(report.imagePath!), fit: BoxFit.cover),
             ),
           Padding(
             padding: const EdgeInsets.all(18),
@@ -490,7 +503,6 @@ class _CreateReportPageState extends State<_CreateReportPage> {
     });
 
     try {
-      final image = await StorageService.instance.persistImage(_selectedImage!);
       final report = EnvironmentalReport(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text.trim(),
@@ -500,10 +512,13 @@ class _CreateReportPageState extends State<_CreateReportPage> {
         urgency: _selectedUrgency,
         status: 'Menunggu verifikasi',
         createdAt: DateTime.now(),
-        imagePath: image.path,
       );
 
-      await ReportService.instance.addReport(report);
+      // Pass the image file directly — it will be uploaded as multipart
+      await ReportService.instance.addReport(
+        report,
+        imageFile: _selectedImage,
+      );
       if (!mounted) {
         return;
       }

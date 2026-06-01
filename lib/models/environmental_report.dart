@@ -6,7 +6,10 @@ class EnvironmentalReport {
   final String locationName;
   final String urgency;
   final String status;
+  /// Local file path (before upload) OR null after synced with server.
   final String? imagePath;
+  /// Full URL from server (e.g. http://10.0.2.2:8000/storage/reports/xxx.jpg)
+  final String? imageUrl;
   final DateTime createdAt;
 
   const EnvironmentalReport({
@@ -19,6 +22,7 @@ class EnvironmentalReport {
     required this.status,
     required this.createdAt,
     this.imagePath,
+    this.imageUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -31,6 +35,7 @@ class EnvironmentalReport {
       'urgency': urgency,
       'status': status,
       'imagePath': imagePath,
+      'imageUrl': imageUrl,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -45,6 +50,7 @@ class EnvironmentalReport {
       urgency: json['urgency']?.toString() ?? 'Sedang',
       status: json['status']?.toString() ?? 'Menunggu verifikasi',
       imagePath: json['imagePath']?.toString(),
+      imageUrl: json['imageUrl']?.toString(),
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
     );
@@ -60,6 +66,7 @@ class EnvironmentalReport {
       urgency: json['urgency']?.toString() ?? 'Sedang',
       status: json['status']?.toString() ?? 'Menunggu verifikasi',
       imagePath: json['image_path']?.toString(),
+      imageUrl: json['image_url']?.toString(),
       createdAt: DateTime.tryParse(
             (json['reported_at'] ?? json['created_at'] ?? '').toString(),
           ) ??

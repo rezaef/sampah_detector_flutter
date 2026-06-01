@@ -40,13 +40,25 @@ class MapsPlaceService {
         return nearby;
       }
 
-      return _searchNominatim(query: query, category: category, limit: 15);
+      return _searchNominatim(
+        query: query,
+        category: category,
+        latitude: latitude,
+        longitude: longitude,
+        limit: 15,
+      );
     }
 
     final area = areaText?.trim() ?? '';
+    double? centerLat;
+    double? centerLng;
+    
     if (area.isNotEmpty) {
       final center = await _geocodeArea('$area, Indonesia');
       if (center != null) {
+        centerLat = center.latitude;
+        centerLng = center.longitude;
+        
         final nearby = await _tryOverpass(
           category: category,
           latitude: center.latitude,
@@ -59,49 +71,113 @@ class MapsPlaceService {
       }
     }
 
-    return _searchNominatim(query: query, category: category, limit: 15);
+    return _searchNominatim(
+      query: query,
+      category: category,
+      latitude: centerLat,
+      longitude: centerLng,
+      limit: 15,
+    );
+  }
+
+  Future<List<double>?> geocodeAreaText(String area) async {
+    final point = await _geocodeArea(area);
+    if (point != null) {
+      return [point.latitude, point.longitude];
+    }
+    return null;
   }
 
   Future<_OsmPoint?> _geocodeArea(String area) async {
+    final parts = area.split(',').map((e) => e.trim()).toList();
+    final uniqueParts = <String>[];
+    for (final part in parts) {
+      if (!uniqueParts.any((element) => element.toLowerCase() == part.toLowerCase())) {
+        uniqueParts.add(part);
+      }
+    }
+    
+    var query = uniqueParts.join(', ');
+    if (!query.toLowerCase().contains('indonesia')) {
+      query = '$query, Indonesia';
+    }
+
+    final point = await _executeGeocode(query);
+    if (point != null) {
+      return point;
+    }
+
+    // Fallback: if geocoding fails, try with just the last 2 parts (usually Regency and Province)
+    if (uniqueParts.length > 2) {
+      final fallbackQuery = uniqueParts.sublist(uniqueParts.length - 2).join(', ') + ', Indonesia';
+      return _executeGeocode(fallbackQuery);
+    }
+
+    return null;
+  }
+
+  Future<_OsmPoint?> _executeGeocode(String query) async {
     final uri = Uri.https(_nominatimHost, '/search', {
       'format': 'jsonv2',
       'limit': '1',
       'countrycodes': 'id',
-      'q': area,
+      'q': query,
     });
 
-    final response = await _nominatimGet(uri);
-    if (response.statusCode != 200) {
+    try {
+      final response = await _nominatimGet(uri);
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final decoded = jsonDecode(response.body) as List<dynamic>;
+      if (decoded.isEmpty) {
+        return null;
+      }
+
+      final first = decoded.first as Map<String, dynamic>;
+      final lat = double.tryParse(first['lat']?.toString() ?? '');
+      final lon = double.tryParse(first['lon']?.toString() ?? '');
+      if (lat == null || lon == null) {
+        return null;
+      }
+
+      return _OsmPoint(lat, lon);
+    } catch (_) {
       return null;
     }
-
-    final decoded = jsonDecode(response.body) as List<dynamic>;
-    if (decoded.isEmpty) {
-      return null;
-    }
-
-    final first = decoded.first as Map<String, dynamic>;
-    final lat = double.tryParse(first['lat']?.toString() ?? '');
-    final lon = double.tryParse(first['lon']?.toString() ?? '');
-    if (lat == null || lon == null) {
-      return null;
-    }
-
-    return _OsmPoint(lat, lon);
   }
 
   Future<List<WastePlaceModel>> _searchNominatim({
     required String query,
     required String category,
+    double? latitude,
+    double? longitude,
     int limit = 15,
   }) async {
-    final uri = Uri.https(_nominatimHost, '/search', {
+    final params = <String, String>{
       'format': 'jsonv2',
       'limit': limit.toString(),
       'countrycodes': 'id',
       'addressdetails': '1',
       'q': query,
-    });
+    };
+
+    if (latitude != null && longitude != null) {
+      final left = longitude - 0.18;
+      final right = longitude + 0.18;
+      final top = latitude + 0.18;
+      final bottom = latitude - 0.18;
+      params['viewbox'] = '$left,$top,$right,$bottom';
+      params['bounded'] = '1';
+
+      // Use clean POI term for geographic queries
+      if (query.contains(' di ')) {
+        params['q'] = query.split(' di ').first;
+      }
+    }
+
+    final uri = Uri.https(_nominatimHost, '/search', params);
 
     final response = await _nominatimGet(uri);
     if (response.statusCode != 200) {

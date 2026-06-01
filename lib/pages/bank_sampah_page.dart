@@ -88,29 +88,42 @@ class _BankSampahPageState extends State<BankSampahPage> {
       final area = _selectedAreaText.trim().isEmpty
           ? 'Indonesia'
           : _selectedAreaText.trim();
-      final useDeviceLocation = !_useManualRegion &&
-          _currentLat != null &&
-          _currentLng != null;
+      
+      double? searchLat;
+      double? searchLng;
+
+      if (_useManualRegion) {
+        final coords = await _mapsPlaceService.geocodeAreaText(area);
+        if (coords != null) {
+          searchLat = coords[0];
+          searchLng = coords[1];
+        }
+      } else {
+        searchLat = _currentLat;
+        searchLng = _currentLng;
+      }
 
       final result = await _mapsPlaceService.searchPlaces(
         query: '${category.query} di $area Indonesia',
         category: category.label,
         areaText: area,
-        latitude: useDeviceLocation ? _currentLat : null,
-        longitude: useDeviceLocation ? _currentLng : null,
+        latitude: searchLat,
+        longitude: searchLng,
       );
 
-      if (_currentLat != null && _currentLng != null) {
+      final sortLat = searchLat ?? _currentLat;
+      final sortLng = searchLng ?? _currentLng;
+      if (sortLat != null && sortLng != null) {
         result.sort((a, b) {
           final distanceA = _distanceKm(
-            _currentLat!,
-            _currentLng!,
+            sortLat,
+            sortLng,
             a.latitude,
             a.longitude,
           );
           final distanceB = _distanceKm(
-            _currentLat!,
-            _currentLng!,
+            sortLat,
+            sortLng,
             b.latitude,
             b.longitude,
           );
@@ -128,8 +141,8 @@ class _BankSampahPageState extends State<BankSampahPage> {
       if (result.isNotEmpty) {
         final first = result.first;
         _moveCameraTo(LatLng(first.latitude, first.longitude), zoom: 14);
-      } else if (useDeviceLocation) {
-        _moveCameraTo(LatLng(_currentLat!, _currentLng!), zoom: 13);
+      } else if (sortLat != null && sortLng != null) {
+        _moveCameraTo(LatLng(sortLat, sortLng), zoom: 13);
       }
     } catch (error) {
       if (!mounted) return;
@@ -270,30 +283,20 @@ class _BankSampahPageState extends State<BankSampahPage> {
   }
 
   Future<void> _openInMaps(WastePlaceModel place) async {
-    Uri uri;
+    final destination = '${place.latitude},${place.longitude}';
+    final origin = (_currentLat != null && _currentLng != null)
+        ? '${_currentLat},${_currentLng}'
+        : '';
+        
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination&travelmode=driving',
+    );
 
-    if (_currentLat != null && _currentLng != null) {
-      uri = Uri.https(
-        'www.openstreetmap.org',
-        '/directions',
-        {
-          'from': '$_currentLat,$_currentLng',
-          'to': '${place.latitude},${place.longitude}',
-        },
-      );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      uri = Uri.https(
-        'www.openstreetmap.org',
-        '/',
-        {
-          'mlat': place.latitude.toString(),
-          'mlon': place.longitude.toString(),
-          'zoom': '17',
-        },
-      );
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
     }
-
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   String? _distanceLabel(WastePlaceModel place) {
@@ -344,7 +347,7 @@ class _BankSampahPageState extends State<BankSampahPage> {
     final selectedPlace = _selectedPlace;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Peta Lokasi Bank Sampah')),
+      appBar: AppBar(title: const Text('Peta Lokasi Pengelolaan & Bank Sampah')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
