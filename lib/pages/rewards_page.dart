@@ -304,37 +304,38 @@ class _RewardHero extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
-          colors: [Color(0xFF21409A), Color(0xFF4A78FF)],
+          colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF21409A).withOpacity(0.16),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
+            color: const Color(0xFF1F8A70).withOpacity(0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
-                    Icons.emoji_events,
-                    color: Colors.white,
+                    Icons.emoji_events_rounded,
+                    color: Color(0xFFFFA447),
+                    size: 28,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -343,17 +344,20 @@ class _RewardHero extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Poin terkumpul',
+                        'Poin Terkumpul',
                         style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.86),
+                          color: Colors.white.withOpacity(0.85),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
-                        '${summary.points} poin',
+                        '${summary.points} Poin',
                         style: theme.textTheme.headlineMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
+                          fontSize: 26,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ],
@@ -361,19 +365,19 @@ class _RewardHero extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _RewardChip(
-                  icon: Icons.workspace_premium_outlined,
+                  icon: Icons.workspace_premium_rounded,
                   label:
-                      '${summary.badges.where((badge) => badge.isUnlocked).length} badge aktif',
+                      '${summary.badges.where((badge) => badge.isUnlocked).length} Badge Aktif',
                 ),
                 _RewardChip(
-                  icon: Icons.today_outlined,
-                  label: '${summary.uniqueScanDays} hari aktif',
+                  icon: Icons.today_rounded,
+                  label: '${summary.uniqueScanDays} Hari Aktif',
                 ),
               ],
             ),
@@ -401,13 +405,14 @@ class _RewardChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
+          Icon(icon, size: 15, color: Colors.white),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
         ],
@@ -429,25 +434,47 @@ class _RewardStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 8),
+            Icon(icon, color: const Color(0xFF1F8A70), size: 22),
+            const SizedBox(height: 6),
             Text(
               value,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w800),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF1B4D3E),
+                fontSize: 18,
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: const TextStyle(
+                color: Color(0xFF8BA69D),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -469,17 +496,21 @@ class _RewardSectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.w800),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1B4D3E),
+            letterSpacing: -0.3,
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B8A80),
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
@@ -494,67 +525,77 @@ class _BadgeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUnlocked = badge.isUnlocked;
-    final color = isUnlocked ? const Color(0xFFF5A623) : const Color(0xFFB7BDC7);
+    final color = isUnlocked ? const Color(0xFFFFA447) : const Color(0xFFB7BDC7);
 
     return Container(
       width: 198,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isUnlocked
-              ? color.withOpacity(0.45)
-              : Theme.of(context)
-                  .colorScheme
-                  .outlineVariant
-                  .withOpacity(0.35),
+              ? color.withOpacity(0.4)
+              : const Color(0xFF1F8A70).withOpacity(0.06),
+          width: isUnlocked ? 1.5 : 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 24,
-            backgroundColor: color.withOpacity(0.14),
+            radius: 22,
+            backgroundColor: color.withOpacity(0.12),
             foregroundColor: color,
             child: Icon(
-              isUnlocked ? Icons.workspace_premium : Icons.lock_outline,
+              isUnlocked ? Icons.workspace_premium_rounded : Icons.lock_outline_rounded,
+              size: 20,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             badge.name,
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.w800),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF1B4D3E),
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Expanded(
             child: Text(
               badge.description,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              style: const TextStyle(
+                color: Color(0xFF6B8A80),
+                fontSize: 12,
+                height: 1.3,
+              ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.10),
+              color: color.withOpacity(0.08),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              isUnlocked ? 'Aktif' : 'Butuh ${badge.minPoints} poin',
+              isUnlocked ? 'Aktif' : 'Butuh ${badge.minPoints} Poin',
               style: TextStyle(
                 color: color,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
               ),
             ),
           ),
@@ -582,8 +623,24 @@ class _RewardItemCard extends StatelessWidget {
     final isEligible = currentPoints >= reward.pointsCost;
     final remaining = (reward.pointsCost - currentPoints).clamp(0, reward.pointsCost);
     final isOutOfStock = reward.isOutOfStock;
+    final progress = (currentPoints / reward.pointsCost).clamp(0.0, 1.0);
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -593,15 +650,16 @@ class _RewardItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF1F8A70).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    Icons.card_giftcard_outlined,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  child: const Icon(
+                    Icons.card_giftcard_rounded,
+                    color: Color(0xFF1F8A70),
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -611,21 +669,22 @@ class _RewardItemCard extends StatelessWidget {
                     children: [
                       Text(
                         reward.title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B4D3E),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         reward.description.isEmpty
                             ? 'Reward aktif dari sistem poin.'
                             : reward.description,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                        style: const TextStyle(
+                          color: Color(0xFF507A6D),
+                          fontSize: 13,
+                          height: 1.3,
+                        ),
                       ),
                     ],
                   ),
@@ -633,19 +692,48 @@ class _RewardItemCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: [
-                Chip(label: Text('${reward.pointsCost} poin')),
-                Chip(label: Text(reward.stock == null ? 'Stok tidak dibatasi' : 'Stok ${reward.stock}')),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFA447).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${reward.pointsCost} Poin',
+                    style: const TextStyle(
+                      color: Color(0xFFFFA447),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F8A70).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    reward.stock == null ? 'Stok tidak dibatasi' : 'Stok ${reward.stock}',
+                    style: const TextStyle(
+                      color: Color(0xFF1F8A70),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             LinearProgressIndicator(
-              value: (currentPoints / reward.pointsCost).clamp(0, 1),
-              minHeight: 10,
+              value: progress,
+              minHeight: 8,
               borderRadius: BorderRadius.circular(999),
+              backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
+              valueColor: const AlwaysStoppedAnimation(Color(0xFF1F8A70)),
             ),
             const SizedBox(height: 10),
             Text(
@@ -654,9 +742,11 @@ class _RewardItemCard extends StatelessWidget {
                   : isEligible
                       ? 'Syarat poin terpenuhi'
                       : '$remaining poin lagi untuk menukar reward ini',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: const TextStyle(
+                color: Color(0xFF6B8A80),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
             ),
             const SizedBox(height: 14),
             SizedBox(
@@ -665,6 +755,13 @@ class _RewardItemCard extends StatelessWidget {
                 onPressed: (!isEligible || isOutOfStock || isSubmitting)
                     ? null
                     : onRedeem,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF1F8A70),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  minimumSize: const Size.fromHeight(48),
+                ),
                 icon: isSubmitting
                     ? const SizedBox(
                         width: 18,
@@ -674,8 +771,11 @@ class _RewardItemCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.redeem_outlined),
-                label: Text(isOutOfStock ? 'Stok habis' : 'Tukar reward'),
+                    : const Icon(Icons.redeem_rounded, size: 20),
+                label: Text(
+                  isOutOfStock ? 'Stok Habis' : 'Tukar Reward',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
             ),
           ],

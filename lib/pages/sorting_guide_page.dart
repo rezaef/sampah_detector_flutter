@@ -62,31 +62,42 @@ class _GuideHero extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
-          colors: [Color(0xFF1F8A70), Color(0xFF5BC0A5)],
+          colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Pemilahan yang tepat mempermudah daur ulang dan kompos.',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
+            const Text(
+              'Pemilahan yang tepat mempermudah daur ulang.',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+                letterSpacing: -0.5,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Gunakan panduan ini sebagai rujukan cepat setelah proses klasifikasi selesai.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.94),
-                  ),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 13,
+                height: 1.3,
+              ),
             ),
           ],
         ),
@@ -114,19 +125,34 @@ class _GuideCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 CircleAvatar(
-                  radius: 24,
+                  radius: 22,
                   backgroundColor: color.withOpacity(0.12),
                   foregroundColor: color,
-                  child: Icon(icon),
+                  child: Icon(icon, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -135,25 +161,34 @@ class _GuideCategoryCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B4D3E),
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(subtitle),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: Color(0xFF6B8A80),
+                          fontSize: 12,
+                          height: 1.3,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Contoh',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B4D3E),
+              ),
             ),
             const SizedBox(height: 8),
             ...examples.map(
@@ -162,20 +197,34 @@ class _GuideCategoryCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.circle, size: 10, color: color),
+                    Container(
+                      margin: const EdgeInsets.only(top: 6),
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(example)),
+                    Expanded(
+                      child: Text(
+                        example,
+                        style: const TextStyle(color: Color(0xFF507A6D), fontSize: 13.5),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Langkah penanganan',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
+            const SizedBox(height: 12),
+            const Text(
+              'Langkah Penanganan',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B4D3E),
+              ),
             ),
             const SizedBox(height: 8),
             ...steps.map(
@@ -185,8 +234,8 @@ class _GuideCategoryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 24,
-                      height: 24,
+                      width: 22,
+                      height: 22,
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.12),
                         shape: BoxShape.circle,
@@ -196,7 +245,12 @@ class _GuideCategoryCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(step)),
+                    Expanded(
+                      child: Text(
+                        step,
+                        style: const TextStyle(color: Color(0xFF507A6D), fontSize: 13.5, height: 1.35),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -219,18 +273,34 @@ class _QuickGuideCard extends StatelessWidget {
       'Salurkan sampah bernilai ke bank sampah atau fasilitas daur ulang.',
     ];
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Alur cepat pemilahan',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800),
+            const Text(
+              'Alur Cepat Pemilahan',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B4D3E),
+              ),
             ),
             const SizedBox(height: 12),
             ...items.asMap().entries.map(
@@ -240,11 +310,21 @@ class _QuickGuideCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CircleAvatar(
-                      radius: 14,
-                      child: Text('${entry.key + 1}'),
+                      radius: 12,
+                      backgroundColor: const Color(0xFF1F8A70).withOpacity(0.12),
+                      foregroundColor: const Color(0xFF1F8A70),
+                      child: Text(
+                        '${entry.key + 1}',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(entry.value)),
+                    Expanded(
+                      child: Text(
+                        entry.value,
+                        style: const TextStyle(color: Color(0xFF507A6D), fontSize: 13.5, height: 1.35),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -267,18 +347,34 @@ class _MistakeCard extends StatelessWidget {
       'Membuang sampah bernilai daur ulang ke tong residu.',
     ];
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Kesalahan yang perlu dihindari',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800),
+            const Text(
+              'Kesalahan yang Perlu Dihindari',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B4D3E),
+              ),
             ),
             const SizedBox(height: 12),
             ...mistakes.map(
@@ -287,9 +383,14 @@ class _MistakeCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: Color(0xFFE69500)),
+                    const Icon(Icons.warning_amber_rounded, color: Color(0xFFFFA447), size: 20),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(item)),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: const TextStyle(color: Color(0xFF507A6D), fontSize: 13.5, height: 1.35),
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -263,8 +263,23 @@ class _DetectPageState extends State<DetectPage> {
         ],
         if (_selectedImage != null) ...[
           const SizedBox(height: 18),
-          Card(
+          Container(
             clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1F8A70).withOpacity(0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              border: Border.all(
+                color: const Color(0xFF1F8A70).withOpacity(0.06),
+                width: 1,
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -322,12 +337,12 @@ class _DetectPageState extends State<DetectPage> {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(14),
+                          color: const Color(0xFF1F8A70).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.auto_awesome,
-                          color: theme.colorScheme.onPrimaryContainer,
+                          color: Color(0xFF1F8A70),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -338,14 +353,15 @@ class _DetectPageState extends State<DetectPage> {
                             Text(
                               'Gambar berhasil dimuat',
                               style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w900,
+                                color: const Color(0xFF1B4D3E),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Tekan tombol di bawah untuk memulai klasifikasi. Gambar akan di-resize ke 192×192 piksel dan diproses oleh model MobileNetV2.',
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: const Color(0xFF507A6D),
                               ),
                             ),
                           ],
@@ -464,22 +480,22 @@ class _HeroCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
-          colors: [Color(0xFF1F8A70), Color(0xFF5BC0A5)],
+          colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF1F8A70).withOpacity(0.18),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -489,10 +505,10 @@ class _HeroCard extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(18),
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.recycling_rounded, color: Colors.white),
+                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -503,14 +519,16 @@ class _HeroCard extends StatelessWidget {
                         'Deteksi Organik & Anorganik',
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: Colors.white,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Ambil foto sampah melalui kamera atau galeri, lalu model MobileNetV2 akan mengklasifikasikan jenis sampah secara otomatis.',
+                        'Klasifikasi jenis sampah secara otomatis dan instan.',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.92),
+                          color: Colors.white.withOpacity(0.9),
                         ),
                       ),
                     ],
@@ -518,45 +536,54 @@ class _HeroCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _InfoChip(
-                  icon: Icons.memory_outlined,
+                  icon: Icons.memory_rounded,
                   label: engineLabel,
                   textColor: Colors.white,
-                  backgroundColor: Colors.white.withOpacity(0.14),
+                  backgroundColor: Colors.white.withOpacity(0.12),
                 ),
                 _InfoChip(
-                  icon: Icons.photo_size_select_large_outlined,
+                  icon: Icons.aspect_ratio_rounded,
                   label: 'Input 192 × 192',
                   textColor: Colors.white,
-                  backgroundColor: Colors.white.withOpacity(0.14),
+                  backgroundColor: Colors.white.withOpacity(0.12),
                 ),
                 _InfoChip(
-                  icon: Icons.filter_alt_outlined,
-                  label: 'CLAHE + Edge Detection',
+                  icon: Icons.photo_filter_rounded,
+                  label: 'CLAHE + Canny Edge',
                   textColor: Colors.white,
-                  backgroundColor: Colors.white.withOpacity(0.14),
+                  backgroundColor: Colors.white.withOpacity(0.12),
                 ),
               ],
             ),
             if (!isInitializing) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white.withOpacity(0.20)),
+                  color: Colors.black.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Text(
-                  'Setiap hasil klasifikasi otomatis tersimpan di riwayat dan menambah poin gamifikasi Anda.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                  ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Hasil klasifikasi otomatis disimpan dan menambah poin Anda.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withOpacity(0.95),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -584,16 +611,21 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1B4D3E),
+            letterSpacing: -0.3,
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B8A80),
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
@@ -624,11 +656,15 @@ class _InfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: textColor),
+          Icon(icon, size: 16, color: textColor),
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
           ),
         ],
       ),

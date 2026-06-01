@@ -41,9 +41,24 @@ class ResultCard extends StatelessWidget {
     final scores = result.scores.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -68,23 +83,29 @@ class ResultCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hasil klasifikasi',
+                          'Hasil Klasifikasi',
                           style: theme.textTheme.labelLarge?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: const Color(0xFF507A6D),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           result.label,
                           style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w900,
                             color: accent,
+                            letterSpacing: -0.5,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           result.recommendation,
-                          style: theme.textTheme.bodyMedium,
+                          style: const TextStyle(
+                            color: Color(0xFF1B4D3E),
+                            fontSize: 14,
+                            height: 1.35,
+                          ),
                         ),
                       ],
                     ),
@@ -111,20 +132,22 @@ class ResultCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Tingkat kepercayaan',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                const Text(
+                  'Tingkat Kepercayaan',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1B4D3E),
                   ),
                 ),
                 Text(
                   result.confidenceLabel,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w900,
                     color: accent,
                   ),
                 ),
@@ -135,16 +158,18 @@ class ResultCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
                 value: result.confidence,
-                minHeight: 12,
+                minHeight: 10,
                 color: accent,
                 backgroundColor: accent.withOpacity(0.12),
               ),
             ),
-            const SizedBox(height: 18),
-            Text(
-              'Skor per kelas',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+            const SizedBox(height: 20),
+            const Text(
+              'Skor per Kelas',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B4D3E),
               ),
             ),
             const SizedBox(height: 12),
@@ -159,12 +184,19 @@ class ResultCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             entry.key,
-                            style: theme.textTheme.bodyMedium?.copyWith(
+                            style: const TextStyle(
                               fontWeight: FontWeight.w600,
+                              color: Color(0xFF1B4D3E),
                             ),
                           ),
                         ),
-                        Text('$percentage%'),
+                        Text(
+                          '$percentage%',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1B4D3E),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -182,10 +214,12 @@ class ResultCard extends StatelessWidget {
               );
             }),
             const SizedBox(height: 8),
-            Text(
-              'Tindak lanjut',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+            const Text(
+              'Tindak Lanjut',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B4D3E),
               ),
             ),
             const SizedBox(height: 12),
@@ -196,8 +230,8 @@ class ResultCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 24,
-                      height: 24,
+                      width: 22,
+                      height: 22,
                       margin: const EdgeInsets.only(top: 1),
                       decoration: BoxDecoration(
                         color: accent.withOpacity(0.12),
@@ -205,24 +239,44 @@ class ResultCard extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.check,
-                        size: 16,
+                        size: 14,
                         color: accent,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(step)),
+                    Expanded(
+                      child: Text(
+                        step,
+                        style: const TextStyle(
+                          color: Color(0xFF507A6D),
+                          fontSize: 13.5,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             if (onOpenGuide != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.tonalIcon(
                   onPressed: onOpenGuide,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
+                    foregroundColor: const Color(0xFF1F8A70),
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                   icon: const Icon(Icons.menu_book_outlined),
-                  label: const Text('Buka panduan pemilahan'),
+                  label: const Text(
+                    'Buka panduan pemilahan',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],

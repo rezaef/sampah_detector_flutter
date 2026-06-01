@@ -71,42 +71,38 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
           children: [
             Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(24),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0F766E), Color(0xFF22C55E)],
+                  colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF0F766E).withOpacity(0.14),
+                    color: const Color(0xFF1F8A70).withOpacity(0.18),
                     blurRadius: 24,
-                    offset: const Offset(0, 16),
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Target mingguan pengguna',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelLarge
-                          ?.copyWith(color: Colors.white.withOpacity(0.9)),
+                      'Target mingguan Anda',
+                      style: TextStyle(color: Colors.white.withOpacity(0.82), fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '$completed / ${summary.challenges.length} challenge selesai',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                          ),
+                      '$completed / ${summary.challenges.length} Misi Selesai',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 22,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Wrap(
@@ -114,16 +110,16 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
                       runSpacing: 8,
                       children: [
                         _ChallengeChip(
-                          icon: Icons.stars_outlined,
-                          label: '+$totalRewardPoints poin reward',
+                          icon: Icons.stars_rounded,
+                          label: '+$totalRewardPoints Poin',
                         ),
                         _ChallengeChip(
                           icon: Icons.today_outlined,
-                          label: '${summary.uniqueScanDays} hari aktif',
+                          label: '${summary.uniqueScanDays} Hari Aktif',
                         ),
                         _ChallengeChip(
                           icon: Icons.qr_code_scanner_outlined,
-                          label: '${summary.totalScans} total scan',
+                          label: '${summary.totalScans} Scan',
                         ),
                       ],
                     ),
@@ -132,19 +128,23 @@ class _EcoChallengesPageState extends State<EcoChallengesPage> {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              'Daftar tantangan',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800),
+            const Text(
+              'Daftar Tantangan',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1B4D3E),
+                letterSpacing: -0.3,
+              ),
             ),
-            const SizedBox(height: 6),
-            Text(
+            const SizedBox(height: 2),
+            const Text(
               'Semua progres dihitung otomatis dari aktivitas scan, laporan, dan konsistensi penggunaan.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              style: TextStyle(
+                fontSize: 13,
+                color: Color(0xFF6B8A80),
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 16),
             ...summary.challenges.map(
@@ -171,7 +171,7 @@ class _ChallengeChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -184,6 +184,7 @@ class _ChallengeChip extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
         ],
@@ -215,11 +216,25 @@ class _ChallengeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = challenge.isCompleted;
-    final accent = isCompleted
-        ? const Color(0xFF16A34A)
-        : Theme.of(context).colorScheme.primary;
+    final accent = isCompleted ? const Color(0xFF16A34A) : const Color(0xFF1F8A70);
+    final pointsColor = isCompleted ? const Color(0xFF16A34A) : const Color(0xFFFFA447);
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -229,13 +244,13 @@ class _ChallengeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(16),
+                    color: accent.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(_iconForChallenge(), color: accent),
+                  child: Icon(_iconForChallenge(), color: accent, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -244,40 +259,40 @@ class _ChallengeCard extends StatelessWidget {
                     children: [
                       Text(
                         challenge.title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B4D3E),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         challenge.description,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                        style: const TextStyle(
+                          color: Color(0xFF507A6D),
+                          fontSize: 13,
+                          height: 1.3,
+                        ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 10,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.10),
+                    color: pointsColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     isCompleted ? 'Selesai' : '+${challenge.rewardPoints} poin',
                     style: TextStyle(
-                      color: accent,
-                      fontWeight: FontWeight.w700,
+                      color: pointsColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -286,22 +301,30 @@ class _ChallengeCard extends StatelessWidget {
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: challenge.completionRatio,
-              minHeight: 10,
+              minHeight: 8,
               borderRadius: BorderRadius.circular(999),
               color: accent,
-              backgroundColor: accent.withOpacity(0.12),
+              backgroundColor: accent.withOpacity(0.08),
             ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${challenge.progress}/${challenge.target} progres'),
+                Text(
+                  '${challenge.progress}/${challenge.target} progres',
+                  style: const TextStyle(
+                    color: Color(0xFF6B8A80),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
+                ),
                 Text(
                   isCompleted ? 'Target tercapai' : 'Lanjutkan aktivitas',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    color: isCompleted ? const Color(0xFF16A34A) : const Color(0xFF1F8A70),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
+                  ),
                 ),
               ],
             ),

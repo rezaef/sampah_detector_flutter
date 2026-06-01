@@ -1,4 +1,3 @@
-import '../models/classification_result.dart';
 import '../models/gamification_models.dart';
 import 'api_client.dart';
 import 'history_service.dart';

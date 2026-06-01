@@ -368,7 +368,22 @@ class _HistoryHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -380,37 +395,38 @@ class _HistoryHeaderCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF1F8A70).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     isSelectionMode
                         ? Icons.checklist_rounded
                         : Icons.history_rounded,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    color: const Color(0xFF1F8A70),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isSelectionMode ? 'Mode pilih aktif' : 'Riwayat klasifikasi',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                        isSelectionMode ? 'Mode Pilih Aktif' : 'Riwayat Klasifikasi',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B4D3E),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         isSelectionMode
                             ? 'Tap item untuk memilih, lalu pilih semua atau hapus.'
                             : '$totalItems riwayat tersimpan di perangkat.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                        style: const TextStyle(
+                          color: Color(0xFF6B8A80),
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -423,8 +439,19 @@ class _HistoryHeaderCard extends StatelessWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: onClearAll,
-                  icon: const Icon(Icons.delete_sweep_outlined),
-                  label: const Text('Hapus semua riwayat'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    side: BorderSide(color: Colors.red.shade200, width: 1.5),
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: const Icon(Icons.delete_sweep_outlined, size: 20),
+                  label: const Text(
+                    'Hapus semua riwayat',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  ),
                 ),
               ),
             ],
@@ -454,37 +481,31 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedColor = Theme.of(context).colorScheme.primary;
+    final selectedColor = const Color(0xFF1F8A70);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: selectedColor.withOpacity(0.12),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ]
-            : null,
-      ),
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: isSelected
-                ? selectedColor
-                : Theme.of(context)
-                    .colorScheme
-                    .outlineVariant
-                    .withOpacity(0.35),
-            width: isSelected ? 1.4 : 1,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: selectedColor.withOpacity(isSelected ? 0.08 : 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
+        ],
+        border: Border.all(
+          color: isSelected
+              ? selectedColor
+              : const Color(0xFF1F8A70).withOpacity(0.06),
+          width: isSelected ? 1.6 : 1,
         ),
+      ),
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
+          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           onLongPress: onLongPress,
           child: Padding(
@@ -495,10 +516,10 @@ class _HistoryCard extends StatelessWidget {
                 Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(14),
                       child: SizedBox(
-                        width: 92,
-                        height: 92,
+                        width: 86,
+                        height: 86,
                         child: _HistoryImage(path: item.imagePath),
                       ),
                     ),
@@ -507,7 +528,7 @@ class _HistoryCard extends StatelessWidget {
                         child: Container(
                           decoration: BoxDecoration(
                             color: selectedColor.withOpacity(0.22),
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Icon(
                             Icons.check_circle,
@@ -528,16 +549,19 @@ class _HistoryCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               item.result.label,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1B4D3E),
+                              ),
                             ),
                           ),
                           if (isSelected)
-                            Icon(Icons.check_circle, color: selectedColor),
-                          if (!isSelected)
+                            Icon(Icons.check_circle, color: selectedColor)
+                          else
                             PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              iconColor: const Color(0xFF6B8A80),
                               onSelected: (value) {
                                 if (value == 'hapus') {
                                   onDelete();
@@ -548,9 +572,9 @@ class _HistoryCard extends StatelessWidget {
                                   value: 'hapus',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.delete_outline),
+                                      Icon(Icons.delete_outline, color: Colors.red),
                                       SizedBox(width: 8),
-                                      Text('Hapus'),
+                                      Text('Hapus', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
                                     ],
                                   ),
                                 ),
@@ -558,26 +582,38 @@ class _HistoryCard extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Text('Kepercayaan: ${item.result.confidenceLabel}'),
-                      const SizedBox(height: 4),
-                      Text('Waktu: $formattedDateTime'),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Text(
+                            'Kepercayaan: ',
+                            style: TextStyle(color: Color(0xFF6B8A80), fontSize: 12),
+                          ),
+                          Text(
+                            item.result.confidenceLabel,
+                            style: const TextStyle(
+                              color: Color(0xFF1F8A70),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Waktu: $formattedDateTime',
+                        style: const TextStyle(color: Color(0xFF8BA69D), fontSize: 11),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         item.result.recommendation,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          Chip(label: Text(item.result.engine)),
-                        ],
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF507A6D),
+                          fontSize: 13,
+                          height: 1.3,
+                        ),
                       ),
                     ],
                   ),
@@ -601,8 +637,8 @@ class _HistoryImage extends StatelessWidget {
     final file = File(path);
     if (!file.existsSync()) {
       return Container(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: const Icon(Icons.image_not_supported_outlined),
+        color: const Color(0xFFEBF3F0),
+        child: const Icon(Icons.image_not_supported_outlined, color: Color(0xFF6B8A80)),
       );
     }
 
@@ -611,8 +647,8 @@ class _HistoryImage extends StatelessWidget {
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) {
         return Container(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          child: const Icon(Icons.broken_image_outlined),
+          color: const Color(0xFFEBF3F0),
+          child: const Icon(Icons.broken_image_outlined, color: Color(0xFF6B8A80)),
         );
       },
     );

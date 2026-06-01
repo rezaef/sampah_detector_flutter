@@ -279,9 +279,24 @@ class _DashboardPageState extends State<DashboardPage> {
                 'Progres tantangan dihitung otomatis berdasarkan jumlah scan dan laporan Anda.',
           ),
           const SizedBox(height: 12),
-          Card(
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1F8A70).withOpacity(0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              border: Border.all(
+                color: const Color(0xFF1F8A70).withOpacity(0.06),
+                width: 1,
+              ),
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -291,56 +306,68 @@ class _DashboardPageState extends State<DashboardPage> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer,
-                          borderRadius: BorderRadius.circular(16),
+                          color: const Color(0xFF1F8A70).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.flag_rounded,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer,
+                          color: Color(0xFF1F8A70),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               activeChallenge.title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1B4D3E),
+                              ),
                             ),
                             const SizedBox(height: 4),
-                            Text(activeChallenge.description),
+                            Text(
+                              activeChallenge.description,
+                              style: const TextStyle(
+                                color: Color(0xFF507A6D),
+                                fontSize: 13,
+                                height: 1.3,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   LinearProgressIndicator(
                     value: activeChallenge.completionRatio,
-                    minHeight: 10,
+                    minHeight: 8,
                     borderRadius: BorderRadius.circular(999),
+                    backgroundColor: const Color(0xFF1F8A70).withOpacity(0.1),
+                    valueColor: const AlwaysStoppedAnimation(Color(0xFF1F8A70)),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '${activeChallenge.progress}/${activeChallenge.target} progres',
+                        style: const TextStyle(
+                          color: Color(0xFF6B8A80),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                       Text(
                         '+${activeChallenge.rewardPoints} poin',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          color: Color(0xFFFFA447),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -369,37 +396,38 @@ class _DashboardHero extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
-          colors: [Color(0xFF1F8A70), Color(0xFF5BC0A5)],
+          colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1F8A70).withOpacity(0.16),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
+            color: const Color(0xFF1F8A70).withOpacity(0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: const Icon(
-                    Icons.recycling_rounded,
+                    Icons.forest_rounded,
                     color: Colors.white,
+                    size: 28,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -410,17 +438,20 @@ class _DashboardHero extends StatelessWidget {
                       Text(
                         userName == null || userName!.trim().isEmpty
                             ? 'Selamat datang'
-                            : 'Selamat datang, ${userName!.trim()}',
+                            : 'Hai, ${userName!.trim()}!',
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: Colors.white,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 22,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Kelola sampah mulai dari deteksi, pemilahan, hingga pelaporan dan lokasi pengelolaan terdekat.',
+                        'Mari wujudkan lingkungan bersih hari ini.',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.94),
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -428,24 +459,43 @@ class _DashboardHero extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _HeroChip(
-                  icon: Icons.stars_outlined,
-                  label: '${summary.points} poin',
-                ),
-                _HeroChip(
-                  icon: Icons.workspace_premium_outlined,
-                  label: '${summary.completedChallenges} challenge selesai',
-                ),
-                _HeroChip(
-                  icon: Icons.monitor_heart_outlined,
-                  label: '${summary.reportCount} laporan lingkungan',
-                ),
-              ],
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _HeroStat(
+                    icon: Icons.stars_rounded,
+                    value: '${summary.points}',
+                    label: 'Poin',
+                  ),
+                  Container(
+                    height: 32,
+                    width: 1,
+                    color: Colors.white.withOpacity(0.15),
+                  ),
+                  _HeroStat(
+                    icon: Icons.verified_rounded,
+                    value: '${summary.completedChallenges}',
+                    label: 'Misi',
+                  ),
+                  Container(
+                    height: 32,
+                    width: 1,
+                    color: Colors.white.withOpacity(0.15),
+                  ),
+                  _HeroStat(
+                    icon: Icons.assignment_turned_in_rounded,
+                    value: '${summary.reportCount}',
+                    label: 'Laporan',
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -454,34 +504,46 @@ class _DashboardHero extends StatelessWidget {
   }
 }
 
-class _HeroChip extends StatelessWidget {
+class _HeroStat extends StatelessWidget {
   final IconData icon;
+  final String value;
   final String label;
 
-  const _HeroChip({required this.icon, required this.label});
+  const _HeroStat({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: const Color(0xFFFFA447)),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.75),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -499,24 +561,44 @@ class _StatCard extends StatelessWidget {
     this.subtitle,
   });
 
-
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final theme = Theme.of(context);
+    final isPoints = title.toLowerCase().contains('poin');
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
+                color: isPoints 
+                    ? const Color(0xFFFFA447).withOpacity(0.12)
+                    : const Color(0xFF1F8A70).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                color: isPoints ? const Color(0xFFFFA447) : const Color(0xFF1F8A70),
+                size: 22,
               ),
             ),
             const SizedBox(width: 12),
@@ -526,31 +608,31 @@ class _StatCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF6B8A80),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     value,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF1B4D3E),
+                      fontSize: 20,
+                    ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF8BA69D),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ],
@@ -562,6 +644,7 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+
 class _FeatureCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -577,69 +660,92 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F8A70).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFF1F8A70),
+                    size: 22,
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 6),
-              Expanded(
-                child: Text(
-                  subtitle,
-                  maxLines: 2,
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant,
-                      ),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF1B4D3E),
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Buka fitur',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w700,
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Text(
+                    subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF6B8A80),
+                      fontSize: 12,
+                      height: 1.3,
                     ),
-              ),
-            ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text(
+                      'Buka Fitur',
+                      style: TextStyle(
+                        color: const Color(0xFF1F8A70),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: Color(0xFF1F8A70),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -660,18 +766,21 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.w800),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1B4D3E),
+            letterSpacing: -0.3,
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color:
-                    Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B8A80),
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
@@ -695,65 +804,81 @@ class _ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F8A70).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1F8A70).withOpacity(0.06),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .primaryContainer,
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFF1F8A70).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onPrimaryContainer,
+                color: const Color(0xFF1F8A70),
+                size: 22,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelLarge
-                        ?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
+                    style: const TextStyle(
+                      color: Color(0xFF8BA69D),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF1B4D3E),
+                      fontSize: 15,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    description,
+                    style: const TextStyle(
+                      color: Color(0xFF507A6D),
+                      fontSize: 13,
+                      height: 1.3,
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(description),
                   const SizedBox(height: 8),
                   Text(
                     footer,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
+                    style: const TextStyle(
+                      color: Color(0xFF8BA69D),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),

@@ -257,6 +257,56 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   @override
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback? onTap,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive ? const Color(0xFFE57373) : const Color(0xFF1F8A70);
+    final titleColor = isDestructive ? const Color(0xFFD32F2F) : const Color(0xFF1B4D3E);
+    final iconBgColor = isDestructive ? const Color(0xFFFFEBEE) : const Color(0xFF1F8A70).withOpacity(0.08);
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 8,
+      ),
+      leading: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: iconBgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          color: titleColor,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(
+          color: Color(0xFF6B8A80),
+          fontSize: 12.5,
+          height: 1.3,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: Color(0xFF8BA69D),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
     final theme = Theme.of(context);
@@ -273,81 +323,115 @@ class _AccountPageState extends State<AccountPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          Card(
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1F8A70), Color(0xFF35A285)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1F8A70).withOpacity(0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 34,
-                    child: Text(
-                      user.initials,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.35), width: 3),
+                    ),
+                    child: CircleAvatar(
+                      radius: 38,
+                      backgroundColor: Colors.white.withOpacity(0.15),
+                      child: Text(
+                        user.initials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   Text(
                     user.displayName,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '@${user.username}',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user.email,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.72),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Card(
+          const SizedBox(height: 18),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1F8A70).withOpacity(0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              border: Border.all(
+                color: const Color(0xFF1F8A70).withOpacity(0.06),
+                width: 1,
+              ),
+            ),
             child: Column(
               children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  leading: const Icon(Icons.email_outlined),
-                  title: const Text('Ubah Email'),
-                  subtitle: Text(user.email),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                _buildMenuItem(
+                  icon: Icons.email_outlined,
+                  title: 'Ubah Email',
+                  subtitle: user.email,
                   onTap: _isSubmitting ? null : _changeEmail,
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  leading: const Icon(Icons.lock_reset_outlined),
-                  title: const Text('Ubah Kata Sandi'),
-                  subtitle: const Text('Perbarui kata sandi akses'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                const Divider(height: 1, indent: 78, endIndent: 16),
+                _buildMenuItem(
+                  icon: Icons.lock_reset_outlined,
+                  title: 'Ubah Kata Sandi',
+                  subtitle: 'Perbarui kata sandi akses akun Anda',
                   onTap: _isSubmitting ? null : _changePassword,
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  leading: const Icon(Icons.logout_rounded),
-                  title: const Text('Logout'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                const Divider(height: 1, indent: 78, endIndent: 16),
+                _buildMenuItem(
+                  icon: Icons.logout_rounded,
+                  title: 'Logout',
+                  subtitle: 'Keluar dari sesi masuk aplikasi',
+                  isDestructive: true,
                   onTap: _isSubmitting ? null : _logout,
                 ),
               ],
