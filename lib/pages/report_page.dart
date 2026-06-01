@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/environmental_report.dart';
 import '../services/report_service.dart';
+import '../services/location_service.dart';
+import '../services/maps_place_service.dart';
 import '../widgets/region_dropdown_picker.dart';
 
 class ReportPage extends StatefulWidget {
@@ -667,6 +669,11 @@ class _CreateReportPageState extends State<_CreateReportPage> with SingleTickerP
   ];
   final List<String> _urgencies = const ['Rendah', 'Sedang', 'Tinggi'];
 
+  final LocationService _locationService = LocationService();
+  final MapsPlaceService _mapsPlaceService = MapsPlaceService();
+  bool _isUsingGPS = false;
+  bool _isFetchingGPS = false;
+
   String _selectedLocation = '';
   String _selectedCategory = 'Tumpukan liar';
   String _selectedUrgency = 'Sedang';
@@ -807,6 +814,47 @@ class _CreateReportPageState extends State<_CreateReportPage> with SingleTickerP
     }
   }
 
+  Future<void> _fetchCurrentLocation() async {
+    setState(() {
+      _isFetchingGPS = true;
+    });
+
+    try {
+      final position = await _locationService.getCurrentPosition();
+      if (position == null) {
+        throw Exception('Gagal mendapatkan koordinat GPS. Pastikan izin lokasi aktif.');
+      }
+
+      final address = await _mapsPlaceService.reverseGeocode(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (address == null || address.isEmpty) {
+        throw Exception('Gagal menerjemahkan koordinat lokasi ke alamat.');
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _selectedLocation = address;
+        _isUsingGPS = true;
+        _isFetchingGPS = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lokasi berhasil diambil dari GPS.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isFetchingGPS = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -935,28 +983,47 @@ class _CreateReportPageState extends State<_CreateReportPage> with SingleTickerP
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Lokasi Laporan',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF1B4D3E),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Lokasi Laporan',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1B4D3E),
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: _isFetchingGPS ? null : _fetchCurrentLocation,
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF1F8A70),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              icon: _isFetchingGPS
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1F8A70)),
+                                      ),
+                                    )
+                                  : const Icon(Icons.my_location_rounded, size: 14),
+                              label: Text(
+                                _isFetchingGPS ? 'Mengambil...' : 'Lokasi Sekarang',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
-                        RegionDropdownPicker(
-                          compact: true,
-                          initialHelperText:
-                              'Pilih bertahap dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
-                          onChanged: (selection) {
-                            setState(() {
-                              _selectedLocation = selection.areaText;
-                            });
-                          },
-                        ),
-                        if (_selectedLocation.isNotEmpty) ...[
-                          const SizedBox(height: 10),
+                        if (_isUsingGPS) ...[
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
@@ -967,24 +1034,97 @@ class _CreateReportPageState extends State<_CreateReportPage> with SingleTickerP
                               color: const Color(0xFF1F8A70).withOpacity(0.08),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Row(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.place_outlined, size: 18, color: Color(0xFF1F8A70)),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _selectedLocation,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF1B4D3E),
-                                      fontSize: 13.5,
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(Icons.gps_fixed_rounded, size: 18, color: Color(0xFF1F8A70)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _selectedLocation,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF1B4D3E),
+                                          fontSize: 13.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedLocation = '';
+                                        _isUsingGPS = false;
+                                      });
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.redAccent,
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: const Text(
+                                      'Pilih Lokasi Manual',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                        ] else ...[
+                          RegionDropdownPicker(
+                            key: const ValueKey('manual-picker'),
+                            compact: true,
+                            initialHelperText:
+                                'Pilih bertahap dari provinsi, kabupaten/kota, kecamatan, lalu kelurahan/desa.',
+                            onChanged: (selection) {
+                              setState(() {
+                                _selectedLocation = selection.areaText;
+                              });
+                            },
+                          ),
+                          if (_selectedLocation.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1F8A70).withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.place_outlined, size: 18, color: Color(0xFF1F8A70)),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _selectedLocation,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF1B4D3E),
+                                        fontSize: 13.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(

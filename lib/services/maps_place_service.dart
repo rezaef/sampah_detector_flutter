@@ -113,6 +113,34 @@ class MapsPlaceService {
     return null;
   }
 
+  Future<String?> reverseGeocode(double lat, double lng) async {
+    const apiKey = ApiConfig.googleMapsApiKey;
+    if (apiKey == 'YOUR_API_KEY_HERE' || apiKey.isEmpty) {
+      return null;
+    }
+
+    final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
+      'latlng': '$lat,$lng',
+      'key': apiKey,
+      'language': 'id',
+    });
+
+    try {
+      final response = await _client.get(uri);
+      if (response.statusCode != 200) return null;
+
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      if (decoded['status'] != 'OK') return null;
+
+      final results = decoded['results'] as List<dynamic>? ?? [];
+      if (results.isEmpty) return null;
+
+      final first = results.first as Map<String, dynamic>;
+      return first['formatted_address']?.toString();
+    } catch (_) {}
+    return null;
+  }
+
   List<WastePlaceModel> _deduplicate(List<WastePlaceModel> places) {
     final seen = <String>{};
     final result = <WastePlaceModel>[];
