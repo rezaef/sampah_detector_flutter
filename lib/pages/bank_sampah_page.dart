@@ -1,8 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/waste_place_model.dart';
@@ -20,7 +19,7 @@ class BankSampahPage extends StatefulWidget {
 class _BankSampahPageState extends State<BankSampahPage> {
   final MapsPlaceService _mapsPlaceService = MapsPlaceService();
   final LocationService _locationService = LocationService();
-  final MapController _mapController = MapController();
+  GoogleMapController? _googleMapController;
 
   final List<_PlaceCategory> _categories = const [
     _PlaceCategory(
@@ -62,6 +61,12 @@ class _BankSampahPageState extends State<BankSampahPage> {
   void initState() {
     super.initState();
     _initLocationAndSearch();
+  }
+
+  @override
+  void dispose() {
+    _googleMapController?.dispose();
+    super.dispose();
   }
 
   Future<void> _initLocationAndSearch() async {
@@ -155,79 +160,47 @@ class _BankSampahPageState extends State<BankSampahPage> {
     }
   }
 
-  List<Marker> get _markers {
-    final markers = <Marker>[];
+  Set<Marker> get _markers {
+    final markers = <Marker>{};
 
-    if (_currentLat != null && _currentLng != null) {
+    for (var index = 0; index < _places.length; index++) {
+      final place = _places[index];
+      final selected = index == _selectedPlaceIndex;
+
+      double hue = BitmapDescriptor.hueRed;
+      switch (_selectedCategoryIndex) {
+        case 0: // Bank Sampah
+          hue = selected ? BitmapDescriptor.hueViolet : BitmapDescriptor.hueGreen;
+          break;
+        case 1: // Pengelolaan
+          hue = selected ? BitmapDescriptor.hueViolet : BitmapDescriptor.hueAzure;
+          break;
+        case 2: // TPS/TPA
+          hue = selected ? BitmapDescriptor.hueViolet : BitmapDescriptor.hueRed;
+          break;
+        case 3: // Drop Point
+          hue = selected ? BitmapDescriptor.hueViolet : BitmapDescriptor.hueOrange;
+          break;
+      }
+
       markers.add(
         Marker(
-          point: LatLng(_currentLat!, _currentLng!),
-          width: 42,
-          height: 42,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.blue.shade600,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 4),
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 10,
-                  color: Colors.black26,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.my_location,
-              color: Colors.white,
-              size: 18,
-            ),
+          markerId: MarkerId(place.id),
+          position: LatLng(place.latitude, place.longitude),
+          icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+          infoWindow: InfoWindow(
+            title: place.name,
+            snippet: place.category,
           ),
+          onTap: () {
+            setState(() {
+              _selectedPlaceIndex = index;
+            });
+            _moveCameraTo(LatLng(place.latitude, place.longitude), zoom: 16);
+          },
         ),
       );
     }
-
-    markers.addAll(
-      _places.asMap().entries.map((entry) {
-        final index = entry.key;
-        final place = entry.value;
-        final selected = index == _selectedPlaceIndex;
-
-        return Marker(
-          point: LatLng(place.latitude, place.longitude),
-          width: selected ? 54 : 46,
-          height: selected ? 54 : 46,
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedPlaceIndex = index;
-              });
-              _moveCameraTo(LatLng(place.latitude, place.longitude), zoom: 16);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.tertiary,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
-                boxShadow: const [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black26,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Icon(
-                _categories[_selectedCategoryIndex].icon,
-                color: Colors.white,
-                size: selected ? 27 : 23,
-              ),
-            ),
-          ),
-        );
-      }),
-    );
 
     return markers;
   }
@@ -248,7 +221,14 @@ class _BankSampahPageState extends State<BankSampahPage> {
   }
 
   void _moveCameraTo(LatLng target, {double zoom = 15}) {
-    _mapController.move(target, zoom);
+    _googleMapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: target,
+          zoom: zoom,
+        ),
+      ),
+    );
   }
 
   void _onRegionChanged(RegionSelection selection) {
@@ -347,19 +327,19 @@ class _BankSampahPageState extends State<BankSampahPage> {
     final selectedPlace = _selectedPlace;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Peta Lokasi Pengelolaan & Bank Sampah')),
+      appBar: AppBar(title: const Text('Peta Lokasi Sampah')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           _HeaderCard(
             title: selectedCategory.label == 'Bank Sampah'
-                ? 'Cari bank sampah terdekat tanpa API key berbayar.'
-                : 'Cari lokasi pengelolaan sampah berbasis OpenStreetMap.',
+                ? 'Temukan bank sampah dan titik daur ulang terdekat.'
+                : 'Temukan ${selectedCategory.label.toLowerCase()} di sekitar lokasi Anda.',
             subtitle: _useManualRegion
                 ? 'Wilayah aktif: $_selectedAreaText'
                 : _currentLat == null
-                    ? 'Pilih wilayah Indonesia secara bertahap, atau aktifkan GPS untuk lokasi terdekat.'
-                    : 'Mode terdekat aktif dari lokasi perangkat kamu.',
+                    ? 'Pilih wilayah atau aktifkan GPS untuk mencari lokasi terdekat.'
+                    : 'Menampilkan hasil berdasarkan lokasi perangkat saat ini.',
           ),
           const SizedBox(height: 16),
           Card(
@@ -422,27 +402,17 @@ class _BankSampahPageState extends State<BankSampahPage> {
               height: 360,
               child: Stack(
                 children: [
-                  FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      initialCenter: _initialCenter,
-                      initialZoom: 13,
-                      minZoom: 4,
-                      maxZoom: 19,
+                  GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: _initialCenter,
+                      zoom: 13,
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.sampah_detector_mobile',
-                      ),
-                      MarkerLayer(markers: _markers),
-                    ],
-                  ),
-                  const Positioned(
-                    left: 8,
-                    bottom: 8,
-                    child: _OsmAttribution(),
+                    myLocationEnabled: _currentLat != null && _currentLng != null,
+                    myLocationButtonEnabled: false,
+                    markers: _markers,
+                    onMapCreated: (controller) {
+                      _googleMapController = controller;
+                    },
                   ),
                   if (_isLoading)
                     Container(
@@ -497,7 +467,7 @@ class _BankSampahPageState extends State<BankSampahPage> {
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Text(
-                  'Belum ada lokasi ditemukan dari OpenStreetMap. Coba pilih wilayah yang lebih luas, aktifkan lokasi terdekat, atau pilih kategori lain.',
+                  'Tidak ditemukan lokasi untuk kategori ini di wilayah yang dipilih. Coba perluas area pencarian atau gunakan kategori lain.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
@@ -569,27 +539,6 @@ class _HeaderCard extends StatelessWidget {
                   ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OsmAttribution extends StatelessWidget {
-  const _OsmAttribution();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.86),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(
-          '© OpenStreetMap contributors',
-          style: Theme.of(context).textTheme.labelSmall,
         ),
       ),
     );

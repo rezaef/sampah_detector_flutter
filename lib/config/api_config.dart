@@ -29,8 +29,15 @@ class ApiConfig {
   }
 
   /// Versi peta gratis memakai OpenStreetMap + flutter_map.
-  /// Tidak perlu API key Google Maps.
-  static const bool useOpenStreetMap = true;
+  /// Diubah ke false jika bermigrasi ke Google Maps API.
+  static const bool useOpenStreetMap = false;
+
+  /// API Key untuk Google Maps Platform (Geocoding & Places API) di Flutter.
+  /// Anda bisa mengganti 'YOUR_API_KEY_HERE' dengan API Key asli Anda.
+  static const String googleMapsApiKey = String.fromEnvironment(
+    'GOOGLE_MAPS_API_KEY',
+    defaultValue: 'AIzaSyAEQ81XryxDpufit-eBXBqduM0bGWYlyqQ',
+  );
 
   static String _normalize(String value) {
     final trimmed = value.trim().replaceAll(RegExp(r'/+$'), '');

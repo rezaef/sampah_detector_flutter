@@ -233,9 +233,9 @@ class _DetectPageState extends State<DetectPage> {
         _HeroCard(isUsingModel: usingModel, isInitializing: _isInitializing),
         const SizedBox(height: 16),
         const _SectionTitle(
-          title: 'Ambil gambar',
+          title: 'Ambil gambar sampah',
           subtitle:
-              'Pilih dari kamera atau galeri untuk memulai proses klasifikasi.',
+              'Foto langsung dari kamera atau pilih dari galeri perangkat Anda.',
         ),
         const SizedBox(height: 12),
         Row(
@@ -336,14 +336,14 @@ class _DetectPageState extends State<DetectPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Gambar siap diproses',
+                              'Gambar berhasil dimuat',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Lanjutkan ke klasifikasi untuk melihat hasil, rekomendasi penanganan, dan riwayat terbaru.',
+                              'Tekan tombol di bawah untuk memulai klasifikasi. Gambar akan di-resize ke 192×192 piksel dan diproses oleh model MobileNetV2.',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -394,9 +394,9 @@ class _DetectPageState extends State<DetectPage> {
         if (_bundle != null && _selectedImage != null) ...[
           const SizedBox(height: 16),
           const _SectionTitle(
-            title: 'Preview preprocessing',
+            title: 'Tahapan preprocessing',
             subtitle:
-                'Lihat setiap tahapan pengolahan citra sebelum analisis klasifikasi dijalankan.',
+                'Visualisasi setiap langkah: resize, CLAHE (peningkatan kontras), normalisasi, dan deteksi tepi.',
           ),
           const SizedBox(height: 12),
           PreprocessingPreview(
@@ -416,7 +416,7 @@ class _DetectPageState extends State<DetectPage> {
             key: _resultSectionKey,
             title: 'Hasil klasifikasi',
             subtitle:
-                'Hasil, skor tiap kelas, dan panduan tindak lanjut tampil dalam satu tampilan.',
+                'Label prediksi, skor confidence per kelas, dan rekomendasi penanganan sampah.',
           ),
           const SizedBox(height: 12),
           ResultCard(
@@ -460,7 +460,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final engineLabel = isUsingModel ? 'Mode TFLite offline' : 'Analisis lokal';
+    final engineLabel = isUsingModel ? 'MobileNetV2 via TFLite' : 'Inferensi lokal';
 
     return Container(
       decoration: BoxDecoration(
@@ -500,7 +500,7 @@ class _HeroCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Klasifikasi sampah lebih cepat',
+                        'Deteksi Organik & Anorganik',
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
@@ -508,7 +508,7 @@ class _HeroCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Pilih gambar, jalankan preprocessing, lalu lihat hasil klasifikasi dan panduan penanganan secara instan.',
+                        'Ambil foto sampah melalui kamera atau galeri, lalu model MobileNetV2 akan mengklasifikasikan jenis sampah secara otomatis.',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withOpacity(0.92),
                         ),
@@ -531,13 +531,13 @@ class _HeroCard extends StatelessWidget {
                 ),
                 _InfoChip(
                   icon: Icons.photo_size_select_large_outlined,
-                  label: 'Input 224 x 224',
+                  label: 'Input 192 × 192',
                   textColor: Colors.white,
                   backgroundColor: Colors.white.withOpacity(0.14),
                 ),
                 _InfoChip(
                   icon: Icons.filter_alt_outlined,
-                  label: 'CLAHE + edge preview',
+                  label: 'CLAHE + Edge Detection',
                   textColor: Colors.white,
                   backgroundColor: Colors.white.withOpacity(0.14),
                 ),
@@ -553,7 +553,7 @@ class _HeroCard extends StatelessWidget {
                   border: Border.all(color: Colors.white.withOpacity(0.20)),
                 ),
                 child: Text(
-                  'Setiap hasil deteksi langsung dapat disimpan ke riwayat dan dipakai untuk memperbarui point pengguna.',
+                  'Setiap hasil klasifikasi otomatis tersimpan di riwayat dan menambah poin gamifikasi Anda.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.white,
                   ),

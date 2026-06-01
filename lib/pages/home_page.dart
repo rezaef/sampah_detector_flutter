@@ -17,7 +17,6 @@ enum AppFeature {
   rewards,
   report,
   challenges,
-  tpa,
   bankSampah,
 }
 
@@ -180,7 +179,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const _SectionHeader(
             title: 'Menu utama',
             subtitle:
-                'Akses cepat ke fitur inti pengelolaan sampah.',
+                'Fitur lengkap untuk deteksi, edukasi, dan pengelolaan sampah.',
           ),
           const SizedBox(height: 12),
           GridView.count(
@@ -193,43 +192,37 @@ class _DashboardPageState extends State<DashboardPage> {
             children: [
               _FeatureCard(
                 title: 'Scan Sampah',
-                subtitle: 'Kamera, galeri, preprocessing, dan klasifikasi.',
+                subtitle: 'Klasifikasi sampah organik/anorganik menggunakan model MobileNetV2.',
                 icon: Icons.camera_alt_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.detect),
               ),
               _FeatureCard(
                 title: 'Panduan Pemilahan',
-                subtitle: 'Alur pembuangan, contoh, dan langkah lanjutan.',
+                subtitle: 'Cara memilah sampah dengan benar beserta contoh per kategori.',
                 icon: Icons.rule_folder_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.sortingGuide),
               ),
               _FeatureCard(
                 title: 'Edukasi Lingkungan',
-                subtitle: 'Artikel singkat, tips, dan insight pengelolaan sampah.',
+                subtitle: 'Artikel tentang daur ulang, dampak sampah, dan tips ramah lingkungan.',
                 icon: Icons.menu_book_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.education),
               ),
               _FeatureCard(
-                title: 'Tantangan Aktif',
-                subtitle: 'Tantangan mingguan untuk mendorong konsistensi.',
+                title: 'Tantangan Eco',
+                subtitle: 'Selesaikan misi mingguan untuk mendapatkan poin dan badge.',
                 icon: Icons.flag_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.challenges),
               ),
               _FeatureCard(
                 title: 'Laporan Lingkungan',
-                subtitle: 'Buat laporan lokasi sampah lengkap dengan foto.',
+                subtitle: 'Laporkan lokasi penumpukan sampah beserta dokumentasi foto.',
                 icon: Icons.report_gmailerrorred_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.report),
               ),
               _FeatureCard(
-                title: 'Lokasi Pengelolaan',
-                subtitle: 'Ketintang, drop point, dan rujukan akhir kota.',
-                icon: Icons.delete_outline,
-                onTap: () => widget.onOpenFeature(AppFeature.tpa),
-              ),
-              _FeatureCard(
-                title: 'Peta Bank Sampah',
-                subtitle: 'Ketintang, Gayungan, dan rujukan bank sampah kota.',
+                title: 'Peta Lokasi Sampah',
+                subtitle: 'Cari TPS, TPA, bank sampah, dan drop point terdekat.',
                 icon: Icons.map_outlined,
                 onTap: () => widget.onOpenFeature(AppFeature.bankSampah),
               ),
@@ -239,7 +232,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const _SectionHeader(
             title: 'Aktivitas terbaru',
             subtitle:
-                'Ringkasan hasil scan terakhir dan laporan lingkungan terbaru.',
+                'Hasil scan dan laporan lingkungan terkini dari akun Anda.',
           ),
           const SizedBox(height: 12),
           if (_latestHistory != null)
@@ -256,7 +249,7 @@ class _DashboardPageState extends State<DashboardPage> {
               title: 'Klasifikasi terakhir',
               subtitle: 'Belum ada riwayat klasifikasi',
               description:
-                  'Mulai dengan memilih gambar dari kamera atau galeri pada menu deteksi.',
+                  'Buka menu Scan Sampah untuk memulai klasifikasi gambar pertama Anda.',
               icon: Icons.photo_camera_back_outlined,
               footer: 'Siap digunakan',
             ),
@@ -273,17 +266,17 @@ class _DashboardPageState extends State<DashboardPage> {
           else
             const _ActivityCard(
               title: 'Laporan lingkungan terbaru',
-              subtitle: 'Belum ada data laporan',
+              subtitle: 'Belum ada laporan',
               description:
-                  'Fitur laporan siap dipakai untuk mencatat titik penumpukan sampah.',
+                  'Gunakan fitur Laporan Lingkungan untuk mendokumentasikan titik penumpukan sampah di sekitar Anda.',
               icon: Icons.assignment_outlined,
-              footer: 'Akses cepat dari dashboard',
+              footer: 'Buka melalui menu utama',
             ),
           const SizedBox(height: 24),
           const _SectionHeader(
-            title: 'Challenge aktif',
+            title: 'Tantangan aktif',
             subtitle:
-                'Progress tantangan langsung dihitung dari aktivitas scan dan laporan.',
+                'Progres tantangan dihitung otomatis berdasarkan jumlah scan dan laporan Anda.',
           ),
           const SizedBox(height: 12),
           Card(
@@ -425,7 +418,7 @@ class _DashboardHero extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Kelola scan, edukasi, gamifikasi, laporan, dan informasi lokasi dalam satu aplikasi.',
+                        'Kelola sampah mulai dari deteksi, pemilahan, hingga pelaporan dan lokasi pengelolaan terdekat.',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withOpacity(0.94),
                         ),

@@ -11,7 +11,6 @@ import 'pages/login_page.dart';
 import 'pages/report_page.dart';
 import 'pages/rewards_page.dart';
 import 'pages/sorting_guide_page.dart';
-import 'pages/tpa_page.dart';
 import 'services/auth_service.dart';
 import 'services/classifier_service.dart';
 import 'services/history_service.dart';
@@ -26,6 +25,9 @@ class SampahDetectorApp extends StatelessWidget {
     const seed = Color(0xFF1F8A70);
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seed,
+      primary: const Color(0xFF1F8A70),
+      secondary: const Color(0xFF3A9B7A),
+      tertiary: const Color(0xFFFFA447),
       brightness: Brightness.light,
     );
 
@@ -35,22 +37,29 @@ class SampahDetectorApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: colorScheme,
-        scaffoldBackgroundColor: const Color(0xFFF4F7F5),
+        scaffoldBackgroundColor: const Color(0xFFF5F9F7),
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           foregroundColor: colorScheme.onSurface,
           elevation: 0,
           centerTitle: false,
           scrolledUnderElevation: 0,
+          titleTextStyle: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1B4D3E),
+          ),
         ),
         cardTheme: CardThemeData(
-          elevation: 0,
+          elevation: 4,
+          shadowColor: const Color(0xFF1F8A70).withOpacity(0.06),
           color: Colors.white,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.35),
+              color: const Color(0xFF1F8A70).withOpacity(0.08),
+              width: 1,
             ),
           ),
           margin: EdgeInsets.zero,
@@ -59,67 +68,109 @@ class SampahDetectorApp extends StatelessWidget {
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 16,
+            horizontal: 20,
+            vertical: 18,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.55),
+              color: const Color(0xFF1F8A70).withOpacity(0.15),
             ),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.55),
+              color: const Color(0xFF1F8A70).withOpacity(0.15),
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: colorScheme.primary, width: 1.4),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFF1F8A70), width: 1.8),
           ),
+          labelStyle: TextStyle(color: const Color(0xFF1B4D3E).withOpacity(0.7)),
+          hintStyle: TextStyle(color: Colors.grey.shade400),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            elevation: 0,
-            minimumSize: const Size.fromHeight(52),
+            elevation: 2,
+            shadowColor: const Color(0xFF1F8A70).withOpacity(0.15),
+            backgroundColor: const Color(0xFF1F8A70),
+            foregroundColor: Colors.white,
+            minimumSize: const Size.fromHeight(54),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(52),
+            foregroundColor: const Color(0xFF1F8A70),
+            side: const BorderSide(color: Color(0xFF1F8A70), width: 1.5),
+            minimumSize: const Size.fromHeight(54),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF1F8A70),
+            foregroundColor: Colors.white,
             minimumSize: const Size.fromHeight(54),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
         ),
         chipTheme: ChipThemeData(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
           side: BorderSide(
-            color: colorScheme.outlineVariant.withOpacity(0.35),
+            color: const Color(0xFF1F8A70).withOpacity(0.15),
+          ),
+          backgroundColor: Colors.white,
+          selectedColor: const Color(0xFF1F8A70).withOpacity(0.12),
+          labelStyle: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1B4D3E),
           ),
         ),
         navigationBarTheme: NavigationBarThemeData(
-          height: 76,
+          height: 80,
           backgroundColor: Colors.white,
-          indicatorColor: colorScheme.primaryContainer,
+          elevation: 8,
+          shadowColor: Colors.black.withOpacity(0.1),
+          indicatorColor: const Color(0xFF1F8A70).withOpacity(0.12),
           labelTextStyle: WidgetStateProperty.resolveWith((states) {
             final selected = states.contains(WidgetState.selected);
             return TextStyle(
+              fontSize: 12,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? const Color(0xFF1F8A70) : const Color(0xFF6B8A80),
+            );
+          }),
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return IconThemeData(
+              size: 24,
+              color: selected ? const Color(0xFF1F8A70) : const Color(0xFF6B8A80),
             );
           }),
         ),
@@ -321,13 +372,6 @@ class _HomeShellState extends State<HomeShell> {
           ),
         );
         break;
-      case AppFeature.tpa:
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const TpaPage(),
-          ),
-        );
-        break;
       case AppFeature.bankSampah:
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -368,11 +412,11 @@ class _HomeShellState extends State<HomeShell> {
     ];
     final subtitles = <String>[
       user == null
-          ? 'Semua fitur utama pengelolaan sampah dalam satu dashboard.'
-          : 'Seluruh fitur utama pengelolaan sampah tersedia dalam satu dashboard.',
-      'Scan kamera atau galeri, preprocessing, dan klasifikasi lokal.',
-      'Seluruh hasil klasifikasi tersimpan dan dapat dikelola kapan saja.',
-      'Pantau poin, badge, dan progres tantangan secara terpusat.',
+          ? 'Dashboard utama pengelolaan sampah berbasis klasifikasi citra.'
+          : 'Selamat datang kembali! Pantau aktivitas dan akses semua fitur dari sini.',
+      'Klasifikasi jenis sampah menggunakan model MobileNetV2 (input 192×192).',
+      'Seluruh hasil klasifikasi tersimpan dan dapat dilihat kembali kapan saja.',
+      'Kumpulkan poin dari scan dan tantangan, tukarkan dengan reward.',
     ];
 
     return Scaffold(
