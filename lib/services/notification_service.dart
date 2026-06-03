@@ -61,4 +61,35 @@ class NotificationService {
       details,
     );
   }
+
+  Future<void> showReportStatusChanged({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    await initialize();
+
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'report_status_channel',
+        'Status Laporan',
+        channelDescription: 'Notifikasi perubahan status laporan Anda.',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+
+    await _plugin.show(
+      id,
+      title,
+      body,
+      details,
+    );
+  }
 }

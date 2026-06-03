@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import '../models/environmental_report.dart';
 import '../services/report_service.dart';
 import '../services/location_service.dart';
 import '../services/maps_place_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/region_dropdown_picker.dart';
 
 class ReportPage extends StatefulWidget {
@@ -29,6 +31,7 @@ class _ReportPageState extends State<ReportPage> with SingleTickerProviderStateM
   late final Animation<Offset> _headerSlideAnimation;
   late final Animation<double> _statsFadeAnimation;
   late final Animation<Offset> _statsSlideAnimation;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
@@ -64,10 +67,16 @@ class _ReportPageState extends State<ReportPage> with SingleTickerProviderStateM
 
     _animationController.forward();
     _loadReports();
+
+    // Start periodic auto-refresh timer every 8 seconds
+    _refreshTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+      _checkReportStatusUpdatesSilently();
+    });
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _animationController.dispose();
     super.dispose();
   }
@@ -86,6 +95,59 @@ class _ReportPageState extends State<ReportPage> with SingleTickerProviderStateM
       _reports = reports;
       _isLoading = false;
     });
+  }
+
+  void _triggerStatusNotification(EnvironmentalReport report) {
+    String title = '';
+    String body = '';
+
+    if (report.status == 'Diproses') {
+      title = 'Laporan Diproses ⏳';
+      body = 'Laporan "${report.title}" sedang diproses oleh petugas lapangan.';
+    } else if (report.status == 'Selesai') {
+      title = 'Laporan Selesai 🎉';
+      body = 'Laporan "${report.title}" telah selesai ditangani. Terima kasih!';
+    } else if (report.status == 'Menunggu verifikasi') {
+      title = 'Laporan Menunggu Verifikasi 📋';
+      body = 'Laporan "${report.title}" masuk dalam antrean verifikasi petugas.';
+    } else {
+      title = 'Pembaruan Laporan 🔔';
+      body = 'Status laporan "${report.title}" diubah menjadi: ${report.status}.';
+    }
+
+    NotificationService.instance.showReportStatusChanged(
+      id: report.id.hashCode,
+      title: title,
+      body: body,
+    );
+  }
+
+  Future<void> _checkReportStatusUpdatesSilently() async {
+    if (_isLoading || !mounted) return;
+    try {
+      final updatedReports = await ReportService.instance.loadReports();
+      if (!mounted) return;
+
+      bool hasChanges = false;
+      for (final updated in updatedReports) {
+        final localMatchIdx = _reports.indexWhere((r) => r.id == updated.id);
+        if (localMatchIdx != -1) {
+          final local = _reports[localMatchIdx];
+          if (local.status != updated.status) {
+            _triggerStatusNotification(updated);
+            hasChanges = true;
+          }
+        }
+      }
+
+      if (hasChanges || _reports.length != updatedReports.length) {
+        setState(() {
+          _reports = updatedReports;
+        });
+      }
+    } catch (e) {
+      // Fail silently to avoid interrupting user interactions
+    }
   }
 
   Future<void> _openCreateReport() async {
@@ -797,6 +859,14 @@ class _CreateReportPageState extends State<_CreateReportPage> with SingleTickerP
         report,
         imageFile: _selectedImage,
       );
+      
+      // Trigger local notification for report submission
+      await NotificationService.instance.showReportStatusChanged(
+        id: report.id.hashCode,
+        title: 'Laporan Diterima 📋',
+        body: 'Laporan "${report.title}" telah diterima. Mohon menunggu verifikasi oleh petugas.',
+      );
+
       if (!mounted) {
         return;
       }
