@@ -177,48 +177,51 @@ class _DetectPageState extends State<DetectPage> with SingleTickerProviderStateM
       return;
     }
 
+    setState(() {
+      _isBusy = true;
+      _errorMessage = null;
+    });
+
+    // Klasifikasi sepenuhnya lokal — bisa offline
+    ClassificationResult result;
     try {
+      result = await ClassifierService.instance.classify(_bundle!);
+    } catch (error) {
+      if (!mounted) return;
       setState(() {
-        _isBusy = true;
-        _errorMessage = null;
+        _isBusy = false;
+        _errorMessage = 'Proses klasifikasi gagal: $error';
       });
+      return;
+    }
 
-      final result = await ClassifierService.instance.classify(_bundle!);
+    // Tampilkan hasil segera tanpa menunggu penyimpanan
+    if (!mounted) return;
+    setState(() {
+      _result = result;
+      _isBusy = false;
+    });
 
-      final historyItem = DetectionHistoryItem(
-        imagePath: _selectedImage!.path,
-        result: result,
-        createdAt: DateTime.now(),
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToResult();
+    });
 
+    // Simpan ke antrian lokal + coba sync ke backend (tidak memblokir UI)
+    final historyItem = DetectionHistoryItem(
+      imagePath: _selectedImage!.path,
+      result: result,
+      createdAt: DateTime.now(),
+    );
+
+    try {
       await HistoryService.instance.addHistory(historyItem);
       widget.onHistorySaved();
       await NotificationService.instance.showClassificationCompleted(
         label: result.label,
         confidenceLabel: result.confidenceLabel,
       );
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _result = result;
-        _isBusy = false;
-      });
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToResult();
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isBusy = false;
-        _errorMessage = 'Proses klasifikasi gagal: $error';
-      });
+    } catch (_) {
+      // Hasil sudah ditampilkan; simpan lokal tetap berhasil
     }
   }
 
