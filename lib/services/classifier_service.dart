@@ -2,7 +2,7 @@ import 'dart:math';
 
         import 'package:flutter/services.dart';
         import 'package:image/image.dart' as img;
-        import 'package:tflite_flutter/tflite_flutter.dart';
+        import 'tflite_wrapper.dart';
 
         import '../models/classification_result.dart';
         import '../utils/image_preprocessor.dart';

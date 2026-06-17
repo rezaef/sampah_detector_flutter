@@ -30,10 +30,16 @@ class AuthService extends ChangeNotifier {
     defaultValue: '1007262464293-8h5suimordefvn8fcrg19a1ko9ueci8q.apps.googleusercontent.com',
   );
 
+  static const _googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '1007262464293-jbp9solvtrl0vchvoffg3t91hhtpmr3m.apps.googleusercontent.com',
+  );
+
+  // serverClientId is not supported on web (google_sign_in_web throws assertion)
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: const ['email'],
-    serverClientId:
-        _googleServerClientId.isEmpty ? null : _googleServerClientId,
+    clientId: kIsWeb ? (_googleWebClientId.isEmpty ? null : _googleWebClientId) : null,
+    serverClientId: kIsWeb ? null : (_googleServerClientId.isEmpty ? null : _googleServerClientId),
   );
 
   AuthUser? _currentUser;
@@ -132,20 +138,37 @@ class AuthService extends ChangeNotifier {
       }
 
       final authentication = await account.authentication;
-      final idToken = authentication.idToken;
 
-      if (idToken == null || idToken.isEmpty) {
-        throw const AuthException('ID token Google tidak tersedia.');
+      Map<String, dynamic> body;
+
+      if (kIsWeb) {
+        // Web: signIn() returns access_token only, not id_token.
+        // Backend verifies via Google's userinfo endpoint.
+        final accessToken = authentication.accessToken;
+        if (accessToken == null || accessToken.isEmpty) {
+          throw const AuthException('Token Google tidak tersedia.');
+        }
+        body = {
+          'access_token': accessToken,
+          'email': account.email,
+          'display_name': account.displayName ?? '',
+        };
+      } else {
+        final idToken = authentication.idToken;
+        if (idToken == null || idToken.isEmpty) {
+          throw const AuthException('ID token Google tidak tersedia.');
+        }
+        body = {
+          'id_token': idToken,
+          'email': account.email,
+          'display_name': account.displayName ?? '',
+        };
       }
 
       final response = await ApiClient.instance.post(
         '/mobile/auth/google',
         requiresAuth: false,
-        body: {
-          'id_token': idToken,
-          'email': account.email,
-          'display_name': account.displayName ?? '',
-        },
+        body: body,
       );
 
       await _applyAuthResponse(response as Map<String, dynamic>);
