@@ -10,7 +10,13 @@ class HistoryService {
 
   static final HistoryService instance = HistoryService._();
 
+  Future<void>? _syncFuture;
+
   Future<List<DetectionHistoryItem>> loadHistory() async {
+    // Sync dulu supaya item yang baru saja ditambahkan ikut muncul di
+    // hasil fetch remote di bawah (bukan baru muncul di refresh berikutnya).
+    await syncPending();
+
     List<DetectionHistoryItem> remote = [];
     bool isOnline = false;
 
@@ -33,9 +39,6 @@ class HistoryService {
       return pending..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
 
-    // Sync semua pending ke backend (ditunggu sampai selesai)
-    await syncPending();
-
     // Baca sisa antrian setelah sync:
     // - item yang berhasil sync sudah dihapus dari antrian
     // - yang tersisa hanya item yang gagal sync (tidak ada di remote)
@@ -50,25 +53,20 @@ class HistoryService {
   /// Kalau gagal (offline), data tetap di antrian untuk di-sync nanti.
   Future<void> addHistory(DetectionHistoryItem item) async {
     await LocalQueueService.instance.add(item);
-    unawaited(_trySyncSingle(item));
-  }
-
-  /// Upload satu item ke backend; hapus dari antrian lokal jika berhasil.
-  Future<void> _trySyncSingle(DetectionHistoryItem item) async {
-    try {
-      await ApiClient.instance.post(
-        '/mobile/classifications',
-        body: _toApiBody(item),
-      );
-      await LocalQueueService.instance.remove(item.id);
-    } catch (_) {
-      // Offline atau error — item tetap di antrian lokal
-    }
+    unawaited(syncPending());
   }
 
   /// Upload semua item yang pending ke backend.
-  /// Dipanggil saat terdeteksi online (misal saat loadHistory berhasil).
-  Future<void> syncPending() async {
+  /// Dijaga dengan lock supaya panggilan yang tumpang tindih (misal dari
+  /// addHistory() dan loadHistory() yang terpicu hampir bersamaan) tidak
+  /// sama-sama membaca antrian dan mem-POST item yang sama dua kali.
+  Future<void> syncPending() {
+    return _syncFuture ??= _runSyncPending().whenComplete(() {
+      _syncFuture = null;
+    });
+  }
+
+  Future<void> _runSyncPending() async {
     final pending = await LocalQueueService.instance.getAll();
     for (final item in pending) {
       try {
